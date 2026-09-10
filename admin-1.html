@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel – Rangrez Laundry</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{
+    --navy:#0B1220; --navy-soft:#111827; --teal:#0F9D92; --teal-soft:#E6F7F5;
+    --gold:#C8A45D; --gold-soft:#FDF6E9; --ivory:#F8F5EF; --surface:#FFFFFF;
+    --text:#1F2937; --muted:#6B7280; --border:#E5E7EB; --danger:#EF4444; --success:#10B981;
+    --radius:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--ivory);color:var(--text);}
+  a{color:inherit;}
+
+  /* ---------- Login screen ---------- */
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--navy);}
+  .login-card{background:var(--surface);border-radius:var(--radius);padding:36px 30px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+  .login-card .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;color:var(--navy);margin-bottom:6px;}
+  .login-card .logo-icon{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--navy);}
+  .login-card p.sub{color:var(--muted);font-size:0.85rem;margin-bottom:22px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:var(--navy);}
+  .field input{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;}
+  .field input:focus{outline:2px solid var(--teal);border-color:var(--teal);}
+  .btn{cursor:pointer;border:none;border-radius:8px;font-weight:700;font-size:0.85rem;padding:12px 18px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s;}
+  .btn-primary{background:var(--navy);color:#fff;width:100%;}
+  .btn-primary:hover{background:var(--navy-soft);}
+  .btn-gold{background:var(--gold);color:var(--navy);}
+  .btn-gold:hover{background:#b8941f;}
+  .btn-danger{background:#FEE2E2;color:#991B1B;}
+  .btn-danger:hover{background:#FCA5A5;}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+  .error-msg{color:var(--danger);font-size:0.8rem;margin-top:10px;min-height:16px;}
+  .hint{font-size:0.72rem;color:var(--muted);margin-top:16px;line-height:1.5;}
+
+  /* ---------- App shell ---------- */
+  #app{display:none;min-height:100vh;}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--navy);color:#fff;padding:20px 0;overflow-y:auto;z-index:10;}
+  .sidebar .brand{display:flex;align-items:center;gap:10px;padding:0 20px 20px;font-weight:800;font-size:1.05rem;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:10px;}
+  .sidebar .brand .logo-icon{width:32px;height:32px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--navy);flex-shrink:0;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:12px 20px;cursor:pointer;font-size:0.85rem;font-weight:600;color:rgba(255,255,255,0.75);border-left:3px solid transparent;}
+  .nav-item i{width:18px;text-align:center;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(200,164,93,0.12);border-left-color:var(--gold);color:#fff;}
+  .nav-footer{padding:14px 20px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.1);}
+  .nav-footer .email{font-size:0.72rem;color:rgba(255,255,255,0.5);margin-bottom:10px;word-break:break-all;}
+
+  .main{margin-left:220px;padding:28px 32px 60px;}
+  .page-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:22px;}
+  .page-header h1{font-size:1.4rem;color:var(--navy);}
+  .page-header p{color:var(--muted);font-size:0.85rem;margin-top:4px;}
+
+  .card{background:var(--surface);border-radius:var(--radius);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:20px;border:1px solid var(--border);}
+  .card h3{font-size:0.95rem;color:var(--navy);margin-bottom:14px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px;}
+  .checkbox-row{display:flex;align-items:center;gap:8px;font-size:0.85rem;}
+  select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;background:#fff;}
+  textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;}
+
+  table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+  th{text-align:left;padding:10px 8px;color:var(--muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.03em;border-bottom:2px solid var(--border);}
+  td{padding:12px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:0.7rem;font-weight:700;}
+  .badge.active{background:#D1FAE5;color:#065F46;}
+  .badge.inactive{background:#F3F4F6;color:#6B7280;}
+  .badge.status-new{background:#FEF3C7;color:#92400E;}
+  .badge.status-in-progress{background:#DBEAFE;color:#1E40AF;}
+  .badge.status-done{background:#D1FAE5;color:#065F46;}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .row-actions button{padding:6px 10px;font-size:0.72rem;}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:0.85rem;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 22px;border-radius:50px;font-size:0.85rem;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+  .tiers-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .status-select{padding:6px 8px;border-radius:6px;border:1px solid var(--border);font-size:0.78rem;}
+  .booking-items{font-size:0.78rem;color:var(--muted);margin-top:4px;}
+  @media (max-width:800px){
+    .sidebar{width:64px;}
+    .sidebar .brand span.label, .nav-item span.label, .nav-footer{display:none;}
+    .main{margin-left:64px;padding:20px 16px 60px;}
+    table, thead, tbody, th, td, tr{display:block;}
+    thead{display:none;}
+    tr{margin-bottom:14px;border:1px solid var(--border);border-radius:8px;padding:10px;}
+    td{border:none;padding:6px 4px;}
+    td::before{content:attr(data-label);font-weight:700;display:block;font-size:0.68rem;color:var(--muted);text-transform:uppercase;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="logo"><div class="logo-icon"><i class="fas fa-tshirt"></i></div>RANGREZ LAUNDRY</div>
+    <p class="sub">Admin Panel Login</p>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn"><i class="fas fa-lock"></i> LOGIN</button>
+      <div class="error-msg" id="loginError"></div>
+    </form>
+    <div class="hint">Pehli baar use kar rahe hain? Admin account Firebase Console mein banega. Poora setup steps <strong>SETUP_GUIDE.md</strong> file mein hai.</div>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app">
+  <div class="sidebar">
+    <div class="brand"><div class="logo-icon"><i class="fas fa-tshirt"></i></div><span class="label">RANGREZ</span></div>
+    <div class="nav-item active" data-tab="bookings"><i class="fas fa-receipt"></i><span class="label">Bookings</span></div>
+    <div class="nav-item" data-tab="offers"><i class="fas fa-tags"></i><span class="label">Offers</span></div>
+    <div class="nav-item" data-tab="partners"><i class="fas fa-hotel"></i><span class="label">Hotels / Hospitals</span></div>
+    <div class="nav-item" data-tab="pricing"><i class="fas fa-rupee-sign"></i><span class="label">Pricing</span></div>
+    <div class="nav-item" data-tab="gallery"><i class="fas fa-images"></i><span class="label">Gallery</span></div>
+    <div class="nav-item" data-tab="testimonials"><i class="fas fa-star"></i><span class="label">Testimonials</span></div>
+    <div class="nav-item" data-tab="settings"><i class="fas fa-cog"></i><span class="label">Site Settings & Design</span></div>
+    <div class="nav-footer">
+      <div class="email" id="loggedInEmail"></div>
+      <button class="btn btn-outline" id="logoutBtn" style="width:100%;"><i class="fas fa-sign-out-alt"></i> <span class="label">Logout</span></button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- BOOKINGS -->
+    <section id="tab-bookings">
+      <div class="page-header"><div><h1>Bookings</h1><p>Website se aayi saari laundry pickup requests.</p></div></div>
+      <div class="card">
+        <div id="bookingsList"><div class="empty-state">Loading bookings…</div></div>
+      </div>
+    </section>
+
+    <!-- OFFERS -->
+    <section id="tab-offers" style="display:none;">
+      <div class="page-header"><div><h1>Offers</h1><p>Homepage par dikhne wale offers/banners manage karein.</p></div></div>
+      <div class="card">
+        <h3 id="offerFormTitle">Add New Offer</h3>
+        <form id="offerForm">
+          <input type="hidden" id="offerId">
+          <div class="form-grid">
+            <div class="field"><label>Icon / Emoji</label><input type="text" id="offerIcon" placeholder="🎉" maxlength="4"></div>
+            <div class="field"><label>Title *</label><input type="text" id="offerTitle" required placeholder="e.g. 20% OFF First Order"></div>
+            <div class="field"><label>Order (0,1,2…)</label><input type="number" id="offerOrder" value="0"></div>
+          </div>
+          <div class="field"><label>Description</label><textarea id="offerSubtitle" rows="2" placeholder="Short description of the offer"></textarea></div>
+          <div class="checkbox-row" style="margin-bottom:14px;"><input type="checkbox" id="offerActive" checked><label for="offerActive">Active (visible on website)</label></div>
+          <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Offer</button>
+          <button type="button" class="btn btn-outline" id="offerCancelBtn" style="display:none;">Cancel Edit</button>
+        </form>
+      </div>
+      <div class="card"><div id="offersList"><div class="empty-state">Loading…</div></div></div>
+    </section>
+
+    <!-- PARTNERS -->
+    <section id="tab-partners" style="display:none;">
+      <div class="page-header"><div><h1>Hotels / Hospitals</h1><p>Jo hotel/hospital aapke partner hain, unhe yahan add karein.</p></div></div>
+      <div class="card">
+        <h3 id="partnerFormTitle">Add New Partner</h3>
+        <form id="partnerForm">
+          <input type="hidden" id="partnerId">
+          <div class="form-grid">
+            <div class="field"><label>Name *</label><input type="text" id="partnerName" required placeholder="e.g. Coco Cabana Hotel"></div>
+            <div class="field"><label>Type</label>
+              <select id="partnerType">
+                <option value="hotel">Hotel</option>
+                <option value="hospital">Hospital</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:14px;"><label>Address</label><textarea id="partnerAddress" rows="2" placeholder="Full address"></textarea></div>
+          <div class="checkbox-row" style="margin-bottom:14px;"><input type="checkbox" id="partnerActive" checked><label for="partnerActive">Active (visible on website)</label></div>
+          <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Partner</button>
+          <button type="button" class="btn btn-outline" id="partnerCancelBtn" style="display:none;">Cancel Edit</button>
+        </form>
+      </div>
+      <div class="card"><div id="partnersList"><div class="empty-state">Loading…</div></div></div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="tab-pricing" style="display:none;">
+      <div class="page-header"><div><h1>Pricing</h1><p>Laundry items aur unke rates manage karein.</p></div></div>
+      <div class="card">
+        <h3 id="itemFormTitle">Add New Item</h3>
+        <form id="itemForm">
+          <input type="hidden" id="itemId">
+          <div class="form-grid">
+            <div class="field"><label>Category *</label>
+              <select id="itemCategory" required>
+                <option value="gents">Gents</option>
+                <option value="ladies">Ladies</option>
+                <option value="special">Special (quote only)</option>
+                <option value="bulk">Bulk (quote only)</option>
+              </select>
+            </div>
+            <div class="field"><label>Item Name *</label><input type="text" id="itemName" required placeholder="e.g. SHIRT"></div>
+          </div>
+          <div id="itemPriceFields">
+            <div class="form-grid">
+              <div class="field"><label>Steam Press Price (₹)</label><input type="number" id="itemPress" placeholder="Leave blank if not applicable"></div>
+              <div class="field"><label>Washing Type</label>
+                <select id="itemWashType">
+                  <option value="fixed">Fixed Price</option>
+                  <option value="tiers">Tiers (Basic/Standard/Premium)</option>
+                  <option value="single_double">Single / Double (e.g. Blanket)</option>
+                  <option value="none">No Washing Option</option>
+                </select>
+              </div>
+            </div>
+            <div class="field" id="washFixedField"><label>Washing Price (₹)</label><input type="number" id="itemWash" placeholder="Fixed washing price"></div>
+            <div class="field" id="washTiersField" style="display:none;">
+              <label>Tier Prices (₹)</label>
+              <div class="tiers-fields">
+                <input type="number" id="tierBasic" placeholder="Basic">
+                <input type="number" id="tierStandard" placeholder="Standard">
+                <input type="number" id="tierPremium" placeholder="Premium">
+              </div>
+            </div>
+            <div class="field" id="washSingleDoubleField" style="display:none;">
+              <label>Single / Double Prices (₹)</label>
+              <div class="tiers-fields" style="grid-template-columns:1fr 1fr;">
+                <input type="number" id="priceSingle" placeholder="Single">
+                <input type="number" id="priceDouble" placeholder="Double">
+              </div>
+            </div>
+          </div>
+          <p style="font-size:0.78rem;color:var(--muted);margin:6px 0 14px;">Special/Bulk items ke liye price nahi, sirf "Contact Us" button dikhega — inke liye upar sirf naam bharna kaafi hai.</p>
+          <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Item</button>
+          <button type="button" class="btn btn-outline" id="itemCancelBtn" style="display:none;">Cancel Edit</button>
+        </form>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="pricingCategoryTabs">
+          <button class="btn btn-outline pricing-cat-tab active" data-cat="gents">Gents</button>
+          <button class="btn btn-outline pricing-cat-tab" data-cat="ladies">Ladies</button>
+          <button class="btn btn-outline pricing-cat-tab" data-cat="special">Special</button>
+          <button class="btn btn-outline pricing-cat-tab" data-cat="bulk">Bulk</button>
+        </div>
+        <div id="itemsList"><div class="empty-state">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="tab-gallery" style="display:none;">
+      <div class="page-header"><div><h1>Gallery</h1><p>Website par photos dikhane ke liye image link add karein (e.g. Google Drive / Imgur / any hosted image URL).</p></div></div>
+      <div class="card">
+        <h3 id="galleryFormTitle">Add New Image</h3>
+        <form id="galleryForm">
+          <input type="hidden" id="galleryId">
+          <div class="form-grid">
+            <div class="field"><label>Image URL *</label><input type="url" id="galleryUrl" required placeholder="https://..."></div>
+            <div class="field"><label>Caption</label><input type="text" id="galleryCaption" placeholder="Optional"></div>
+            <div class="field"><label>Order (0,1,2…)</label><input type="number" id="galleryOrder" value="0"></div>
+          </div>
+          <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Image</button>
+          <button type="button" class="btn btn-outline" id="galleryCancelBtn" style="display:none;">Cancel Edit</button>
+        </form>
+      </div>
+      <div class="card"><div id="galleryList"><div class="empty-state">Loading…</div></div></div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="tab-testimonials" style="display:none;">
+      <div class="page-header"><div><h1>Testimonials</h1><p>Customer reviews jo website par dikhenge.</p></div></div>
+      <div class="card">
+        <h3 id="testimonialFormTitle">Add New Testimonial</h3>
+        <form id="testimonialForm">
+          <input type="hidden" id="testimonialId">
+          <div class="form-grid">
+            <div class="field"><label>Customer Name *</label><input type="text" id="testimonialAuthor" required placeholder="e.g. Rohit Sharma"></div>
+            <div class="field"><label>Rating (1-5)</label>
+              <select id="testimonialRating">
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+              </select>
+            </div>
+            <div class="field"><label>Order (0,1,2…)</label><input type="number" id="testimonialOrder" value="0"></div>
+          </div>
+          <div class="field"><label>Review Text *</label><textarea id="testimonialText" rows="3" required placeholder="What did the customer say?"></textarea></div>
+          <div class="checkbox-row" style="margin-bottom:14px;"><input type="checkbox" id="testimonialActive" checked><label for="testimonialActive">Active (visible on website)</label></div>
+          <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Testimonial</button>
+          <button type="button" class="btn btn-outline" id="testimonialCancelBtn" style="display:none;">Cancel Edit</button>
+        </form>
+      </div>
+      <div class="card"><div id="testimonialsList"><div class="empty-state">Loading…</div></div></div>
+    </section>
+
+    <!-- SITE SETTINGS -->
+    <section id="tab-settings" style="display:none;">
+      <div class="page-header"><div><h1>Site Settings & Design</h1><p>Business contact details aur website ki design (colors, hero text) yahan se control karein.</p></div></div>
+      <div class="card">
+        <h3>Contact Details</h3>
+        <form id="settingsForm">
+          <div class="form-grid">
+            <div class="field"><label>Business Name</label><input type="text" id="setBusinessName"></div>
+            <div class="field"><label>Owner Email</label><input type="email" id="setOwnerEmail"></div>
+            <div class="field"><label>Phone Number</label><input type="text" id="setPhone" placeholder="9555982598"></div>
+            <div class="field"><label>WhatsApp Number (with country code, no +)</label><input type="text" id="setWhatsapp" placeholder="919555982598"></div>
+          </div>
+
+          <h3 style="margin-top:20px;">Homepage Text</h3>
+          <div class="form-grid">
+            <div class="field" style="grid-column:1/-1;"><label>Hero Badge (small text above title)</label><input type="text" id="setHeroBadge" placeholder="✦ PREMIUM GARMENT CARE • VARANASI"></div>
+            <div class="field" style="grid-column:1/-1;"><label>Hero Title (use a new line for line-break)</label><textarea id="setHeroTitle" rows="2" placeholder="Fresh Clothes.&#10;Less Hassle."></textarea></div>
+            <div class="field" style="grid-column:1/-1;"><label>Hero Subtitle</label><textarea id="setHeroSubtitle" rows="2" placeholder="Professional pickup, cleaning and delivery designed around your day."></textarea></div>
+          </div>
+
+          <h3 style="margin-top:20px;">Logo & Images</h3>
+          <div class="form-grid">
+            <div class="field" style="grid-column:1/-1;"><label>Logo Image URL (square image, replaces the default icon)</label><input type="url" id="setLogoUrl" placeholder="https://... (leave blank to use default icon)"></div>
+            <div class="field" style="grid-column:1/-1;"><label>Hero Background Image URL (shows behind the homepage banner)</label><input type="url" id="setHeroImageUrl" placeholder="https://... (leave blank to use default pattern)"></div>
+          </div>
+
+          <h3 style="margin-top:20px;">Theme Colors</h3>
+          <div class="form-grid">
+            <div class="field"><label>Primary Color (dark background/text)</label><input type="color" id="setPrimaryColor" value="#0A0E1B" style="height:44px; padding:4px;"></div>
+            <div class="field"><label>Accent Color (gold buttons/highlights)</label><input type="color" id="setAccentColor" value="#C6A052" style="height:44px; padding:4px;"></div>
+          </div>
+
+          <h3 style="margin-top:20px;">Business Hours</h3>
+          <div class="form-grid">
+            <div class="field"><label>Opens at (24hr, e.g. 8 = 8 AM)</label><input type="number" id="setOpenHour" min="0" max="23" placeholder="8"></div>
+            <div class="field"><label>Closes at (24hr, e.g. 21 = 9 PM)</label><input type="number" id="setCloseHour" min="0" max="23" placeholder="21"></div>
+          </div>
+
+          <button type="submit" class="btn btn-gold" style="margin-top:8px;"><i class="fas fa-save"></i> Save Settings</button>
+        </form>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._to); t._to = setTimeout(()=> t.style.display='none', 2800);
+}
+
+if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY) {
+  document.getElementById('loginError').textContent = 'Firebase config abhi set nahi hai — pehle SETUP_GUIDE.md follow karein.';
+}
+
+// ---------------- AUTH ----------------
+document.getElementById('loginForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in…';
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (err) {
+    errEl.textContent = 'Login failed: ' + (err.message || 'Invalid email or password');
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> LOGIN';
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('loggedInEmail').textContent = user.email;
+    initAllListeners();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+// ---------------- TAB NAVIGATION ----------------
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.main > section').forEach(s => s.style.display = 'none');
+    document.getElementById('tab-' + item.dataset.tab).style.display = 'block';
+  });
+});
+
+let listenersInitialized = false;
+function initAllListeners(){
+  if (listenersInitialized) return;
+  listenersInitialized = true;
+  initBookings();
+  initOffers();
+  initPartners();
+  initPricing();
+  initGallery();
+  initTestimonials();
+  initSettings();
+}
+
+// ================= BOOKINGS =================
+function initBookings(){
+  db.collection('bookings').orderBy('createdAt', 'desc').limit(100)
+    .onSnapshot(snap => {
+      const list = document.getElementById('bookingsList');
+      if (snap.empty) { list.innerHTML = '<div class="empty-state">Abhi koi booking nahi aayi hai.</div>'; return; }
+      let html = '<table><thead><tr><th>Booking ID</th><th>Type</th><th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>';
+      snap.forEach(doc => {
+        const b = doc.data();
+        const itemsSummary = (b.cartItems || []).map(i => `${i.name} x${i.quantity}`).join(', ');
+        html += `<tr>
+          <td data-label="Booking ID">${b.bookingId || doc.id}</td>
+          <td data-label="Type">${b.bookingType === 'HOTEL' ? '🏨 ' + (b.hotelName || 'Hotel') : 'Regular'}</td>
+          <td data-label="Customer">${(b.customer && b.customer.name) || '-'}${b.roomNumber ? ' (Room ' + b.roomNumber + ')' : ''}</td>
+          <td data-label="Phone">${(b.customer && b.customer.phone) || '-'}</td>
+          <td data-label="Items"><div class="booking-items">${itemsSummary || '-'}</div></td>
+          <td data-label="Total">₹${(b.totals && b.totals.grandTotal) || 0}</td>
+          <td data-label="Status">
+            <select class="status-select" onchange="updateBookingStatus('${doc.id}', this.value)">
+              <option value="new" ${b.status==='new'?'selected':''}>New</option>
+              <option value="in-progress" ${b.status==='in-progress'?'selected':''}>In Progress</option>
+              <option value="done" ${b.status==='done'?'selected':''}>Done</option>
+            </select>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      list.innerHTML = html;
+    }, err => {
+      document.getElementById('bookingsList').innerHTML = '<div class="empty-state">Bookings load nahi ho payi. Firestore rules check karein.</div>';
+    });
+}
+window.updateBookingStatus = async function(id, status){
+  try { await db.collection('bookings').doc(id).update({ status }); showToast('Status updated'); }
+  catch(e){ showToast('Failed: ' + e.message); }
+};
+
+// ================= OFFERS =================
+function initOffers(){
+  const form = document.getElementById('offerForm');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('offerId').value;
+    const data = {
+      icon: document.getElementById('offerIcon').value || '🎉',
+      title: document.getElementById('offerTitle').value.trim(),
+      subtitle: document.getElementById('offerSubtitle').value.trim(),
+      order: Number(document.getElementById('offerOrder').value) || 0,
+      active: document.getElementById('offerActive').checked
+    };
+    if (!data.title) { showToast('Title required'); return; }
+    try {
+      if (id) await db.collection('offers').doc(id).update(data);
+      else await db.collection('offers').add(data);
+      showToast('Offer saved');
+      resetOfferForm();
+    } catch(err){ showToast('Error: ' + err.message); }
+  });
+  document.getElementById('offerCancelBtn').addEventListener('click', resetOfferForm);
+
+  db.collection('offers').orderBy('order','asc').onSnapshot(snap => {
+    const list = document.getElementById('offersList');
+    if (snap.empty) { list.innerHTML = '<div class="empty-state">Koi offer nahi hai. Upar se add karein.</div>'; return; }
+    let html = '<table><thead><tr><th>Icon</th><th>Title</th><th>Description</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const o = doc.data();
+      html += `<tr>
+        <td data-label="Icon">${o.icon||''}</td>
+        <td data-label="Title">${o.title||''}</td>
+        <td data-label="Description">${o.subtitle||''}</td>
+        <td data-label="Order">${o.order||0}</td>
+        <td data-label="Status"><span class="badge ${o.active?'active':'inactive'}">${o.active?'Active':'Inactive'}</span></td>
+        <td data-label="Actions"><div class="row-actions">
+          <button class="btn btn-outline" onclick='editOffer(${JSON.stringify({id:doc.id,...o})})'>Edit</button>
+          <button class="btn btn-danger" onclick="deleteDoc('offers','${doc.id}','Offer')">Delete</button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+  });
+}
+window.editOffer = function(o){
+  document.getElementById('offerId').value = o.id;
+  document.getElementById('offerIcon').value = o.icon || '';
+  document.getElementById('offerTitle').value = o.title || '';
+  document.getElementById('offerSubtitle').value = o.subtitle || '';
+  document.getElementById('offerOrder').value = o.order || 0;
+  document.getElementById('offerActive').checked = !!o.active;
+  document.getElementById('offerFormTitle').textContent = 'Edit Offer';
+  document.getElementById('offerCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetOfferForm(){
+  document.getElementById('offerForm').reset();
+  document.getElementById('offerId').value = '';
+  document.getElementById('offerActive').checked = true;
+  document.getElementById('offerFormTitle').textContent = 'Add New Offer';
+  document.getElementById('offerCancelBtn').style.display = 'none';
+}
+
+// ================= PARTNERS =================
+function initPartners(){
+  const form = document.getElementById('partnerForm');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('partnerId').value;
+    const data = {
+      name: document.getElementById('partnerName').value.trim(),
+      type: document.getElementById('partnerType').value,
+      address: document.getElementById('partnerAddress').value.trim(),
+      active: document.getElementById('partnerActive').checked
+    };
+    if (!data.name) { showToast('Name required'); return; }
+    try {
+      if (id) await db.collection('partners').doc(id).update(data);
+      else await db.collection('partners').add(data);
+      showToast('Partner saved');
+      resetPartnerForm();
+    } catch(err){ showToast('Error: ' + err.message); }
+  });
+  document.getElementById('partnerCancelBtn').addEventListener('click', resetPartnerForm);
+
+  db.collection('partners').onSnapshot(snap => {
+    const list = document.getElementById('partnersList');
+    if (snap.empty) { list.innerHTML = '<div class="empty-state">Koi partner nahi hai. Upar se add karein.</div>'; return; }
+    let html = '<table><thead><tr><th>Name</th><th>Type</th><th>Address</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const p = doc.data();
+      html += `<tr>
+        <td data-label="Name">${p.name||''}</td>
+        <td data-label="Type">${(p.type||'hotel').toUpperCase()}</td>
+        <td data-label="Address">${p.address||''}</td>
+        <td data-label="Status"><span class="badge ${p.active?'active':'inactive'}">${p.active?'Active':'Inactive'}</span></td>
+        <td data-label="Actions"><div class="row-actions">
+          <button class="btn btn-outline" onclick='editPartner(${JSON.stringify({id:doc.id,...p})})'>Edit</button>
+          <button class="btn btn-danger" onclick="deleteDoc('partners','${doc.id}','Partner')">Delete</button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+  });
+}
+window.editPartner = function(p){
+  document.getElementById('partnerId').value = p.id;
+  document.getElementById('partnerName').value = p.name || '';
+  document.getElementById('partnerType').value = p.type || 'hotel';
+  document.getElementById('partnerAddress').value = p.address || '';
+  document.getElementById('partnerActive').checked = !!p.active;
+  document.getElementById('partnerFormTitle').textContent = 'Edit Partner';
+  document.getElementById('partnerCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetPartnerForm(){
+  document.getElementById('partnerForm').reset();
+  document.getElementById('partnerId').value = '';
+  document.getElementById('partnerActive').checked = true;
+  document.getElementById('partnerFormTitle').textContent = 'Add New Partner';
+  document.getElementById('partnerCancelBtn').style.display = 'none';
+}
+
+// ================= PRICING =================
+let currentPricingCat = 'gents';
+document.querySelectorAll('.pricing-cat-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pricing-cat-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPricingCat = btn.dataset.cat;
+    renderItemsList();
+  });
+});
+document.getElementById('itemWashType').addEventListener('change', function(){
+  const v = this.value;
+  document.getElementById('washFixedField').style.display = v === 'fixed' ? 'block' : 'none';
+  document.getElementById('washTiersField').style.display = v === 'tiers' ? 'block' : 'none';
+  document.getElementById('washSingleDoubleField').style.display = v === 'single_double' ? 'block' : 'none';
+});
+document.getElementById('itemCategory').addEventListener('change', function(){
+  document.getElementById('itemPriceFields').style.display = (this.value === 'special' || this.value === 'bulk') ? 'none' : 'block';
+});
+
+let allPricingItems = [];
+function initPricing(){
+  const form = document.getElementById('itemForm');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('itemId').value;
+    const category = document.getElementById('itemCategory').value;
+    const name = document.getElementById('itemName').value.trim();
+    if (!name) { showToast('Item name required'); return; }
+    let data = { category, name };
+    if (category !== 'special' && category !== 'bulk') {
+      const washType = document.getElementById('itemWashType').value;
+      data.press = document.getElementById('itemPress').value === '' ? null : Number(document.getElementById('itemPress').value);
+      data.washType = washType;
+      if (washType === 'fixed') {
+        data.wash = document.getElementById('itemWash').value === '' ? null : Number(document.getElementById('itemWash').value);
+      } else if (washType === 'tiers') {
+        data.tiersJson = JSON.stringify([
+          { label: 'Basic', price: Number(document.getElementById('tierBasic').value) || 0 },
+          { label: 'Standard', price: Number(document.getElementById('tierStandard').value) || 0 },
+          { label: 'Premium', price: Number(document.getElementById('tierPremium').value) || 0 }
+        ]);
+      } else if (washType === 'single_double') {
+        data.tiersJson = JSON.stringify({ single: Number(document.getElementById('priceSingle').value)||0, double: Number(document.getElementById('priceDouble').value)||0 });
+      }
+    }
+    try {
+      if (id) await db.collection('pricing').doc(id).update(data);
+      else await db.collection('pricing').add(data);
+      showToast('Item saved');
+      resetItemForm();
+    } catch(err){ showToast('Error: ' + err.message); }
+  });
+  document.getElementById('itemCancelBtn').addEventListener('click', resetItemForm);
+
+  db.collection('pricing').onSnapshot(snap => {
+    allPricingItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderItemsList();
+  }, () => {
+    document.getElementById('itemsList').innerHTML = '<div class="empty-state">Items load nahi ho paye.</div>';
+  });
+}
+function renderItemsList(){
+  const items = allPricingItems.filter(i => i.category === currentPricingCat);
+  const list = document.getElementById('itemsList');
+  if (!items.length) { list.innerHTML = '<div class="empty-state">Is category mein koi item nahi hai.</div>'; return; }
+  let html = '<table><thead><tr><th>Name</th><th>Press</th><th>Wash</th><th>Actions</th></tr></thead><tbody>';
+  items.forEach(i => {
+    let washDisplay = '-';
+    if (i.washType === 'fixed') washDisplay = i.wash != null ? '₹' + i.wash : '-';
+    else if (i.washType === 'tiers') washDisplay = 'Tiers set';
+    else if (i.washType === 'single_double') washDisplay = 'Single/Double set';
+    html += `<tr>
+      <td data-label="Name">${i.name}</td>
+      <td data-label="Press">${i.press != null ? '₹'+i.press : '-'}</td>
+      <td data-label="Wash">${washDisplay}</td>
+      <td data-label="Actions"><div class="row-actions">
+        <button class="btn btn-outline" onclick='editItem(${JSON.stringify(i)})'>Edit</button>
+        <button class="btn btn-danger" onclick="deleteDoc('pricing','${i.id}','Item')">Delete</button>
+      </div></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  list.innerHTML = html;
+}
+window.editItem = function(i){
+  document.getElementById('itemId').value = i.id;
+  document.getElementById('itemCategory').value = i.category;
+  document.getElementById('itemName').value = i.name;
+  document.getElementById('itemPriceFields').style.display = (i.category === 'special' || i.category === 'bulk') ? 'none' : 'block';
+  if (i.category !== 'special' && i.category !== 'bulk') {
+    document.getElementById('itemPress').value = i.press != null ? i.press : '';
+    document.getElementById('itemWashType').value = i.washType || 'fixed';
+    document.getElementById('itemWashType').dispatchEvent(new Event('change'));
+    if (i.washType === 'fixed') document.getElementById('itemWash').value = i.wash != null ? i.wash : '';
+    if (i.washType === 'tiers' && i.tiersJson) {
+      try { const t = JSON.parse(i.tiersJson); document.getElementById('tierBasic').value = t[0]?.price||''; document.getElementById('tierStandard').value = t[1]?.price||''; document.getElementById('tierPremium').value = t[2]?.price||''; } catch(e){}
+    }
+    if (i.washType === 'single_double' && i.tiersJson) {
+      try { const t = JSON.parse(i.tiersJson); document.getElementById('priceSingle').value = t.single||''; document.getElementById('priceDouble').value = t.double||''; } catch(e){}
+    }
+  }
+  document.getElementById('itemFormTitle').textContent = 'Edit Item';
+  document.getElementById('itemCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetItemForm(){
+  document.getElementById('itemForm').reset();
+  document.getElementById('itemId').value = '';
+  document.getElementById('itemPriceFields').style.display = 'block';
+  document.getElementById('itemWashType').dispatchEvent(new Event('change'));
+  document.getElementById('itemFormTitle').textContent = 'Add New Item';
+  document.getElementById('itemCancelBtn').style.display = 'none';
+}
+
+// ================= GALLERY =================
+function initGallery(){
+  const form = document.getElementById('galleryForm');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('galleryId').value;
+    const data = {
+      url: document.getElementById('galleryUrl').value.trim(),
+      caption: document.getElementById('galleryCaption').value.trim(),
+      order: Number(document.getElementById('galleryOrder').value) || 0
+    };
+    if (!data.url) { showToast('Image URL required'); return; }
+    try {
+      if (id) await db.collection('gallery').doc(id).update(data);
+      else await db.collection('gallery').add(data);
+      showToast('Image saved');
+      resetGalleryForm();
+    } catch(err){ showToast('Error: ' + err.message); }
+  });
+  document.getElementById('galleryCancelBtn').addEventListener('click', resetGalleryForm);
+
+  db.collection('gallery').orderBy('order','asc').onSnapshot(snap => {
+    const list = document.getElementById('galleryList');
+    if (snap.empty) { list.innerHTML = '<div class="empty-state">Koi image nahi hai.</div>'; return; }
+    let html = '<table><thead><tr><th>Preview</th><th>Caption</th><th>Order</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const g = doc.data();
+      html += `<tr>
+        <td data-label="Preview"><img src="${g.url}" style="width:70px;height:50px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'"></td>
+        <td data-label="Caption">${g.caption||''}</td>
+        <td data-label="Order">${g.order||0}</td>
+        <td data-label="Actions"><div class="row-actions">
+          <button class="btn btn-outline" onclick='editGallery(${JSON.stringify({id:doc.id,...g})})'>Edit</button>
+          <button class="btn btn-danger" onclick="deleteDoc('gallery','${doc.id}','Image')">Delete</button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+  });
+}
+window.editGallery = function(g){
+  document.getElementById('galleryId').value = g.id;
+  document.getElementById('galleryUrl').value = g.url || '';
+  document.getElementById('galleryCaption').value = g.caption || '';
+  document.getElementById('galleryOrder').value = g.order || 0;
+  document.getElementById('galleryFormTitle').textContent = 'Edit Image';
+  document.getElementById('galleryCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetGalleryForm(){
+  document.getElementById('galleryForm').reset();
+  document.getElementById('galleryId').value = '';
+  document.getElementById('galleryFormTitle').textContent = 'Add New Image';
+  document.getElementById('galleryCancelBtn').style.display = 'none';
+}
+
+// ================= TESTIMONIALS =================
+function initTestimonials(){
+  const form = document.getElementById('testimonialForm');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('testimonialId').value;
+    const data = {
+      author: document.getElementById('testimonialAuthor').value.trim(),
+      text: document.getElementById('testimonialText').value.trim(),
+      rating: Number(document.getElementById('testimonialRating').value) || 5,
+      order: Number(document.getElementById('testimonialOrder').value) || 0,
+      active: document.getElementById('testimonialActive').checked
+    };
+    if (!data.author || !data.text) { showToast('Name and review text required'); return; }
+    try {
+      if (id) await db.collection('testimonials').doc(id).update(data);
+      else await db.collection('testimonials').add(data);
+      showToast('Testimonial saved');
+      resetTestimonialForm();
+    } catch(err){ showToast('Error: ' + err.message); }
+  });
+  document.getElementById('testimonialCancelBtn').addEventListener('click', resetTestimonialForm);
+
+  db.collection('testimonials').orderBy('order','asc').onSnapshot(snap => {
+    const list = document.getElementById('testimonialsList');
+    if (snap.empty) { list.innerHTML = '<div class="empty-state">Koi testimonial nahi hai. Upar se add karein.</div>'; return; }
+    let html = '<table><thead><tr><th>Name</th><th>Rating</th><th>Review</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const t = doc.data();
+      html += `<tr>
+        <td data-label="Name">${t.author||''}</td>
+        <td data-label="Rating">${'★'.repeat(t.rating||5)}</td>
+        <td data-label="Review">${(t.text||'').slice(0,80)}${(t.text||'').length>80?'…':''}</td>
+        <td data-label="Status"><span class="badge ${t.active?'active':'inactive'}">${t.active?'Active':'Inactive'}</span></td>
+        <td data-label="Actions"><div class="row-actions">
+          <button class="btn btn-outline" onclick='editTestimonial(${JSON.stringify({id:doc.id,...t})})'>Edit</button>
+          <button class="btn btn-danger" onclick="deleteDoc('testimonials','${doc.id}','Testimonial')">Delete</button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+  }, () => {
+    document.getElementById('testimonialsList').innerHTML = '<div class="empty-state">Load nahi ho paya.</div>';
+  });
+}
+window.editTestimonial = function(t){
+  document.getElementById('testimonialId').value = t.id;
+  document.getElementById('testimonialAuthor').value = t.author || '';
+  document.getElementById('testimonialText').value = t.text || '';
+  document.getElementById('testimonialRating').value = t.rating || 5;
+  document.getElementById('testimonialOrder').value = t.order || 0;
+  document.getElementById('testimonialActive').checked = !!t.active;
+  document.getElementById('testimonialFormTitle').textContent = 'Edit Testimonial';
+  document.getElementById('testimonialCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetTestimonialForm(){
+  document.getElementById('testimonialForm').reset();
+  document.getElementById('testimonialId').value = '';
+  document.getElementById('testimonialActive').checked = true;
+  document.getElementById('testimonialFormTitle').textContent = 'Add New Testimonial';
+  document.getElementById('testimonialCancelBtn').style.display = 'none';
+}
+
+// ================= SETTINGS =================
+function initSettings(){
+  db.collection('site_config').doc('main').get().then(doc => {
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('setBusinessName').value = d.businessName || '';
+      document.getElementById('setOwnerEmail').value = d.ownerEmail || '';
+      document.getElementById('setPhone').value = d.phone || '';
+      document.getElementById('setWhatsapp').value = d.whatsapp || '';
+      document.getElementById('setLogoUrl').value = d.logoUrl || '';
+      document.getElementById('setHeroImageUrl').value = d.heroImageUrl || '';
+      document.getElementById('setHeroBadge').value = d.heroBadge || '';
+      document.getElementById('setHeroTitle').value = d.heroTitle || '';
+      document.getElementById('setHeroSubtitle').value = d.heroSubtitle || '';
+      document.getElementById('setPrimaryColor').value = d.primaryColor || '#0A0E1B';
+      document.getElementById('setAccentColor').value = d.accentColor || '#C6A052';
+      document.getElementById('setOpenHour').value = (d.openHour !== undefined && d.openHour !== null) ? d.openHour : 8;
+      document.getElementById('setCloseHour').value = (d.closeHour !== undefined && d.closeHour !== null) ? d.closeHour : 21;
+    }
+  });
+  document.getElementById('settingsForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const data = {
+      businessName: document.getElementById('setBusinessName').value.trim(),
+      ownerEmail: document.getElementById('setOwnerEmail').value.trim(),
+      phone: document.getElementById('setPhone').value.trim(),
+      whatsapp: document.getElementById('setWhatsapp').value.trim(),
+      logoUrl: document.getElementById('setLogoUrl').value.trim(),
+      heroImageUrl: document.getElementById('setHeroImageUrl').value.trim(),
+      heroBadge: document.getElementById('setHeroBadge').value.trim(),
+      heroTitle: document.getElementById('setHeroTitle').value.trim(),
+      heroSubtitle: document.getElementById('setHeroSubtitle').value.trim(),
+      primaryColor: document.getElementById('setPrimaryColor').value,
+      accentColor: document.getElementById('setAccentColor').value,
+      openHour: Number(document.getElementById('setOpenHour').value),
+      closeHour: Number(document.getElementById('setCloseHour').value)
+    };
+    try {
+      await db.collection('site_config').doc('main').set(data, { merge: true });
+      showToast('Settings saved — refresh the website to see changes');
+    } catch(err){ showToast('Error: ' + err.message); }
+  });
+}
+
+// ================= SHARED DELETE =================
+window.deleteDoc = async function(collection, id, label){
+  if (!confirm(`${label} delete karna hai? Ye action wapas nahi ho sakta.`)) return;
+  try { await db.collection(collection).doc(id).delete(); showToast(label + ' deleted'); }
+  catch(err){ showToast('Error: ' + err.message); }
+};
+</script>
+</body>
+</html>
