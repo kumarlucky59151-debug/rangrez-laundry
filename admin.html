@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Admin 2.0 – Rangrez Laundry</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{
+    --navy:#0B1220; --navy-soft:#161E33; --navy-elev:#1D2742;
+    --teal:#0F9D92; --teal-soft:#E6F7F5;
+    --gold:#C8A45D; --gold-soft:#FDF6E9; --gold-deep:#A8842E;
+    --ivory:#F6F3ED; --surface:#FFFFFF; --surface-alt:#FAF8F4;
+    --text:#1F2937; --muted:#6B7280; --border:#E5E0D5;
+    --danger:#EF4444; --success:#10B981; --warning:#F59E0B;
+    --radius:14px; --radius-sm:9px;
+    --shadow-sm:0 1px 3px rgba(11,18,32,.06);
+    --shadow-md:0 6px 22px rgba(11,18,32,.09);
+    --shadow-lg:0 20px 50px rgba(11,18,32,.18);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--ivory);color:var(--text);line-height:1.5;}
+  button{font-family:inherit;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ================= LOGIN ================= */
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(200,164,93,.15),transparent 60%),var(--navy);}
+  .login-card{background:var(--surface);border-radius:var(--radius);padding:38px 32px;width:100%;max-width:400px;
+    box-shadow:var(--shadow-lg);}
+  .login-card .logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.25rem;color:var(--navy);margin-bottom:6px;}
+  .login-card .logo-icon{width:40px;height:40px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--navy);}
+  .login-card p.sub{color:var(--muted);font-size:.85rem;margin-bottom:24px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.8rem;font-weight:600;margin-bottom:7px;color:var(--navy);}
+  .field input,.field select,.field textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;background:#fff;transition:.15s;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,157,146,.12);}
+  .field textarea{resize:vertical;font-family:inherit;}
+  .btn{cursor:pointer;border:none;border-radius:var(--radius-sm);font-weight:700;font-size:.85rem;padding:12px 18px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.15s;min-height:44px;}
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+  .btn-primary{background:var(--navy);color:#fff;}.btn-primary:hover:not(:disabled){background:var(--navy-soft);}
+  .btn-gold{background:var(--gold);color:var(--navy);}.btn-gold:hover:not(:disabled){background:var(--gold-deep);}
+  .btn-danger{background:#FEE2E2;color:#991B1B;}.btn-danger:hover{background:#FCA5A5;}
+  .btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--text);}.btn-outline:hover{border-color:var(--navy);}
+  .btn-teal{background:var(--teal);color:#fff;}.btn-teal:hover{background:#0B7E75;}
+  .btn-sm{padding:7px 12px;font-size:.75rem;min-height:34px;}
+  .error-msg{color:var(--danger);font-size:.8rem;margin-top:10px;min-height:16px;}
+
+  /* ================= APP SHELL ================= */
+  #app{display:none;min-height:100vh;}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:var(--navy);color:#fff;padding:22px 0;overflow-y:auto;z-index:50;display:flex;flex-direction:column;}
+  .sidebar .brand{display:flex;align-items:center;gap:11px;padding:0 22px 20px;font-weight:800;font-size:1.05rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+  .sidebar .brand .logo-icon{width:36px;height:36px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--navy);flex-shrink:0;}
+  .nav-group{padding:10px 22px 6px;font-size:.66rem;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.4);text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:11px 22px;cursor:pointer;font-size:.86rem;font-weight:600;
+    color:rgba(255,255,255,.72);border-left:3px solid transparent;transition:.15s;}
+  .nav-item i{width:18px;text-align:center;font-size:.95rem;}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:#fff;}
+  .nav-item.active{background:rgba(200,164,93,.14);border-left-color:var(--gold);color:#fff;}
+  .nav-item .nav-badge{margin-left:auto;background:var(--gold);color:var(--navy);border-radius:50px;padding:2px 8px;font-size:.66rem;font-weight:800;}
+  .sidebar .nav-footer{margin-top:auto;padding:16px 22px;border-top:1px solid rgba(255,255,255,.08);}
+  .sidebar .nav-footer .email{font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:10px;word-break:break-all;}
+
+  .main{margin-left:240px;padding:26px 30px 80px;min-height:100vh;}
+  .page-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:22px;}
+  .page-header h1{font-size:1.5rem;color:var(--navy);letter-spacing:-.02em;}
+  .page-header p{color:var(--muted);font-size:.85rem;margin-top:4px;}
+
+  /* ================= CARDS & METRICS ================= */
+  .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px;}
+  .metric-card{background:var(--surface);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow-sm);border:1px solid var(--border);position:relative;overflow:hidden;}
+  .metric-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--teal);}
+  .metric-card.gold::before{background:var(--gold);}
+  .metric-card.warn::before{background:var(--warning);}
+  .metric-card.ok::before{background:var(--success);}
+  .metric-card .metric-label{font-size:.72rem;font-weight:700;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .metric-card .metric-value{font-size:1.7rem;font-weight:800;color:var(--navy);letter-spacing:-.02em;}
+  .metric-card .metric-sub{font-size:.72rem;color:var(--muted);margin-top:4px;}
+
+  .card{background:var(--surface);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm);margin-bottom:20px;border:1px solid var(--border);}
+  .card h3{font-size:.95rem;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .card h3 i{color:var(--gold);}
+  .quick-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+  /* ================= TABLES ================= */
+  table{width:100%;border-collapse:collapse;font-size:.85rem;}
+  th{text-align:left;padding:10px 10px;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;border-bottom:2px solid var(--border);background:var(--surface-alt);}
+  td{padding:12px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:var(--surface-alt);}
+  .badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:700;white-space:nowrap;}
+  .badge.active{background:#D1FAE5;color:#065F46;}
+  .badge.inactive{background:#F3F4F6;color:#6B7280;}
+  .badge.status-new{background:#FEF3C7;color:#92400E;}
+  .badge.status-in-progress{background:#DBEAFE;color:#1E40AF;}
+  .badge.status-done{background:#D1FAE5;color:#065F46;}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+  /* ================= FILTERS / TOOLBAR ================= */
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .toolbar .search{flex:1;min-width:200px;position:relative;}
+  .toolbar .search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem;}
+  .toolbar .search input{padding-left:34px;}
+  .filter-pills{display:flex;gap:6px;flex-wrap:wrap;}
+  .pill{padding:7px 14px;border-radius:50px;font-size:.78rem;font-weight:600;background:#fff;border:1.5px solid var(--border);cursor:pointer;transition:.15s;white-space:nowrap;}
+  .pill:hover{border-color:var(--navy);}
+  .pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+  /* ================= DRAWER ================= */
+  .drawer-overlay{position:fixed;inset:0;background:rgba(11,18,32,.55);z-index:900;opacity:0;pointer-events:none;transition:.2s;}
+  .drawer-overlay.open{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;right:-560px;width:100%;max-width:560px;height:100%;background:var(--surface);z-index:950;
+    transition:right .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.2);}
+  .drawer.open{right:0;}
+  .drawer-header{background:var(--navy);color:#fff;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .drawer-header h3{font-size:1.05rem;font-weight:700;}
+  .drawer-header .sub{font-size:.75rem;opacity:.7;margin-top:2px;}
+  .drawer-close{background:rgba(255,255,255,.1);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .drawer-close:hover{background:rgba(255,255,255,.25);}
+  .drawer-body{flex:1;overflow-y:auto;padding:22px;}
+  .drawer-footer{padding:16px 22px;border-top:1px solid var(--border);background:var(--surface-alt);display:flex;gap:8px;flex-wrap:wrap;}
+  .drawer-footer .btn{flex:1;min-width:110px;}
+
+  .detail-section{margin-bottom:20px;}
+  .detail-section h4{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .detail-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--border);font-size:.85rem;}
+  .detail-row:last-child{border-bottom:none;}
+  .detail-row .lbl{color:var(--muted);flex-shrink:0;}
+  .detail-row .val{font-weight:600;color:var(--navy);text-align:right;word-break:break-word;}
+  .item-line{display:flex;justify-content:space-between;padding:8px 10px;background:var(--surface-alt);border-radius:8px;margin-bottom:6px;font-size:.82rem;}
+  .item-line .nm{font-weight:600;}
+  .item-line .qty{color:var(--muted);font-size:.78rem;}
+  .total-line{display:flex;justify-content:space-between;padding-top:12px;margin-top:8px;border-top:2px solid var(--border);font-weight:800;font-size:1rem;color:var(--navy);}
+
+  /* ================= FORM GRID ================= */
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px;}
+  .checkbox-row{display:flex;align-items:center;gap:8px;font-size:.85rem;padding:8px 0;}
+  .checkbox-row input{width:18px;height:18px;accent-color:var(--teal);}
+  .tiers-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+
+  /* ================= MISC ================= */
+  .empty-state{text-align:center;padding:44px 20px;color:var(--muted);font-size:.85rem;}
+  .empty-state i{font-size:2.2rem;color:var(--border);margin-bottom:10px;display:block;}
+  .empty-state strong{display:block;color:var(--navy);font-size:.95rem;margin-bottom:6px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 22px;border-radius:50px;
+    font-size:.85rem;font-weight:600;z-index:9999;display:none;box-shadow:0 12px 30px rgba(0,0,0,.3);max-width:90vw;}
+  .toast.success{background:var(--success);}
+  .toast.error{background:var(--danger);}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .status-select{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:.78rem;font-weight:600;background:#fff;cursor:pointer;}
+  .status-select:focus{outline:none;border-color:var(--teal);}
+
+  /* ================= MOBILE ================= */
+  @media (max-width:860px){
+    .sidebar{width:64px;}
+    .sidebar .brand span.label,.nav-item span.label,.nav-group,.sidebar .nav-footer{display:none;}
+    .sidebar .brand{padding:0 0 16px;justify-content:center;}
+    .nav-item{justify-content:center;padding:14px 0;}
+    .nav-item .nav-badge{position:absolute;top:6px;right:10px;transform:translate(30%,-30%);}
+    .nav-item{position:relative;}
+    .main{margin-left:64px;padding:20px 16px 70px;}
+    .drawer{max-width:100%;}
+    .metrics-grid{grid-template-columns:repeat(2,1fr);}
+    table,thead,tbody,th,td,tr{display:block;}
+    thead{display:none;}
+    tr{margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;background:#fff;}
+    td{border:none;padding:6px 4px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.82rem;}
+    td::before{content:attr(data-label);font-weight:700;font-size:.68rem;color:var(--muted);text-transform:uppercase;flex-shrink:0;}
+    td .val-wrap{text-align:right;}
+  }
+  @media (max-width:400px){.metrics-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="logo"><div class="logo-icon"><i class="fas fa-tshirt"></i></div>RANGREZ LAUNDRY</div>
+    <p class="sub">Admin Portal 2.0 — Sign in</p>
+    <form id="loginForm">
+      <div class="field"><label for="loginEmail">Email</label><input type="email" id="loginEmail" required autocomplete="username"></div>
+      <div class="field"><label for="loginPassword">Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
+      <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;"><i class="fas fa-lock"></i> SIGN IN</button>
+      <div class="error-msg" id="loginError"></div>
+      <button type="button" id="forgotPasswordBtn" style="margin-top:4px;background:none;border:0;padding:0;color:var(--teal);font-size:.78rem;font-weight:700;cursor:pointer;">Forgot password?</button>
+    </form>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:18px;line-height:1.6;">Firebase Authentication protected. Account management via Firebase Console.</div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo-icon"><i class="fas fa-tshirt"></i></div><span class="label">RANGREZ</span></div>
+
+    <div class="nav-group">Overview</div>
+    <div class="nav-item active" data-tab="dashboard"><i class="fas fa-chart-line"></i><span class="label">Dashboard</span></div>
+    <div class="nav-item" data-tab="bookings"><i class="fas fa-receipt"></i><span class="label">Bookings</span><span class="nav-badge" id="navBookingCount" style="display:none;">0</span></div>
+
+    <div class="nav-group">Content</div>
+    <div class="nav-item" data-tab="pricing"><i class="fas fa-rupee-sign"></i><span class="label">Pricing & Services</span></div>
+    <div class="nav-item" data-tab="offers"><i class="fas fa-tags"></i><span class="label">Offers</span></div>
+    <div class="nav-item" data-tab="partners"><i class="fas fa-hotel"></i><span class="label">Partners</span></div>
+    <div class="nav-item" data-tab="gallery"><i class="fas fa-images"></i><span class="label">Gallery</span></div>
+    <div class="nav-item" data-tab="testimonials"><i class="fas fa-star"></i><span class="label">Testimonials</span></div>
+
+    <div class="nav-group">Configuration</div>
+    <div class="nav-item" data-tab="settings"><i class="fas fa-cog"></i><span class="label">Site Settings</span></div>
+
+    <div class="nav-footer">
+      <div class="email" id="loggedInEmail"></div>
+      <button class="btn btn-outline" id="logoutBtn" style="width:100%;background:transparent;border-color:rgba(255,255,255,.15);color:#fff;"><i class="fas fa-sign-out-alt"></i> <span class="label">Logout</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- ========== DASHBOARD ========== -->
+    <section id="tab-dashboard">
+      <div class="page-header">
+        <div><h1>Dashboard</h1><p>Live overview of your laundry business.</p></div>
+        <div class="quick-actions">
+          <button class="btn btn-outline btn-sm" onclick="switchTab('bookings')"><i class="fas fa-receipt"></i> View All Bookings</button>
+          <a class="btn btn-gold btn-sm" href="index.html" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> View Website</a>
+        </div>
+      </div>
+
+      <div class="metrics-grid" id="metricsGrid">
+        <div class="metric-card"><div class="metric-label"><i class="fas fa-calendar-day"></i> Today's Bookings</div><div class="metric-value" id="mToday">—</div><div class="metric-sub" id="mTodaySub">loading…</div></div>
+        <div class="metric-card warn"><div class="metric-label"><i class="fas fa-inbox"></i> New</div><div class="metric-value" id="mNew">—</div><div class="metric-sub">awaiting pickup</div></div>
+        <div class="metric-card gold"><div class="metric-label"><i class="fas fa-spinner"></i> In Progress</div><div class="metric-value" id="mProgress">—</div><div class="metric-sub">being processed</div></div>
+        <div class="metric-card ok"><div class="metric-label"><i class="fas fa-check-circle"></i> Completed</div><div class="metric-value" id="mDone">—</div><div class="metric-sub">delivered orders</div></div>
+        <div class="metric-card"><div class="metric-label"><i class="fas fa-rupee-sign"></i> Today's Revenue</div><div class="metric-value" id="mRevenue">—</div><div class="metric-sub">grand totals</div></div>
+        <div class="metric-card gold"><div class="metric-label"><i class="fas fa-tags"></i> Active Offers</div><div class="metric-value" id="mOffers">—</div><div class="metric-sub">live promotions</div></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-clock"></i> Recent Bookings</h3>
+        <div id="recentBookings"><div class="empty-state"><span class="spinner"></span> Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- ========== BOOKINGS ========== -->
+    <section id="tab-bookings" style="display:none;">
+      <div class="page-header">
+        <div><h1>Bookings</h1><p id="bookingsSubtitle">All customer laundry requests.</p></div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <div class="search"><i class="fas fa-search"></i><input type="text" id="bookingSearch" placeholder="Search ID, name, phone, hotel, room…"></div>
+        </div>
+        <div class="filter-pills" id="bookingFilters">
+          <button class="pill active" data-filter="all">All</button>
+          <button class="pill" data-filter="new">New</button>
+          <button class="pill" data-filter="in-progress">In Progress</button>
+          <button class="pill" data-filter="done">Done</button>
+          <button class="pill" data-filter="REGULAR">Regular</button>
+          <button class="pill" data-filter="HOTEL">Hotel</button>
+          <button class="pill" data-filter="today">Today</button>
+          <button class="pill" data-filter="tomorrow">Tomorrow</button>
+        </div>
+      </div>
+
+      <div class="card"><div id="bookingsList"><div class="empty-state"><span class="spinner"></span> Loading…</div></div></div>
+    </section>
+
+    <!-- ========== PRICING ========== -->
+    <section id="tab-pricing" style="display:none;">
+      <div class="page-header"><div><h1>Pricing & Services</h1><p>Add, edit and organize laundry items. Changes go live instantly.</p></div></div>
+      <div class="card">
+        <h3 id="itemFormTitle"><i class="fas fa-plus"></i> Add New Item</h3>
+        <form id="itemForm">
+          <input type="hidden" id="itemId">
+          <div class="form-grid">
+            <div class="field"><label>Category *</label>
+              <select id="itemCategory" required>
+                <option value="gents">Gents</option><option value="ladies">Ladies</option>
+                <option value="special">Special (quote only)</option><option value="bulk">Bulk (quote only)</option>
+              </select></div>
+            <div class="field"><label>Item Name *</label><input type="text" id="itemName" required placeholder="e.g. SHIRT"></div>
+            <div class="field"><label>Display Order</label><input type="number" id="itemOrder" value="0"></div>
+            <div class="field"><label>Status</label>
+              <select id="itemActive"><option value="true">Active</option><option value="false">Hidden</option></select></div>
+          </div>
+          <div id="itemPriceFields">
+            <div class="form-grid">
+              <div class="field"><label>Steam Press Price (₹)</label><input type="number" id="itemPress" placeholder="Blank if N/A" min="0"></div>
+              <div class="field"><label>Washing Mode</label>
+                <select id="itemWashType">
+                  <option value="fixed">Fixed Price</option>
+                  <option value="tiers">Tiers (Basic/Standard/Premium)</option>
+                  <option value="single_double">Single / Double</option>
+                  <option value="none">No Washing Option</option>
+                </select></div>
+            </div>
+            <div class="field" id="washFixedField" style="margin-bottom:14px;"><label>Washing Price (₹)</label><input type="number" id="itemWash" min="0" placeholder="Fixed washing price"></div>
+            <div class="field" id="washTiersField" style="display:none;margin-bottom:14px;">
+              <label>Tier Prices (₹)</label>
+              <div class="tiers-fields">
+                <input type="number" id="tierBasic" placeholder="Basic" min="0">
+                <input type="number" id="tierStandard" placeholder="Standard" min="0">
+                <input type="number" id="tierPremium" placeholder="Premium" min="0">
+              </div></div>
+            <div class="field" id="washSingleDoubleField" style="display:none;margin-bottom:14px;">
+              <label>Single / Double Prices (₹)</label>
+              <div class="tiers-fields" style="grid-template-columns:1fr 1fr;">
+                <input type="number" id="priceSingle" placeholder="Single" min="0">
+                <input type="number" id="priceDouble" placeholder="Double" min="0">
+              </div></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Item</button>
+            <button type="button" class="btn btn-outline" id="itemCancelBtn" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="filter-pills" id="pricingCategoryTabs" style="margin-bottom:14px;">
+          <button class="pill active" data-cat="gents">Gents</button>
+          <button class="pill" data-cat="ladies">Ladies</button>
+          <button class="pill" data-cat="special">Special</button>
+          <button class="pill" data-cat="bulk">Bulk</button>
+        </div>
+        <div class="toolbar"><div class="search"><i class="fas fa-search"></i><input type="text" id="pricingSearch" placeholder="Search item name…"></div></div>
+        <div id="itemsList"><div class="empty-state"><span class="spinner"></span> Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- ========== OFFERS ========== -->
+    <section id="tab-offers" style="display:none;">
+      <div class="page-header"><div><h1>Offers</h1><p>Homepage promotions displayed to customers.</p></div></div>
+      <div class="card">
+        <h3 id="offerFormTitle"><i class="fas fa-plus"></i> Add New Offer</h3>
+        <form id="offerForm">
+          <input type="hidden" id="offerId">
+          <div class="form-grid">
+            <div class="field"><label>Icon / Emoji</label><input type="text" id="offerIcon" placeholder="🎉" maxlength="4"></div>
+            <div class="field"><label>Title *</label><input type="text" id="offerTitle" required placeholder="e.g. 20% OFF First Order"></div>
+            <div class="field"><label>Order</label><input type="number" id="offerOrder" value="0"></div>
+          </div>
+          <div class="field" style="margin-bottom:14px;"><label>Description</label><textarea id="offerSubtitle" rows="2" placeholder="Short description"></textarea></div>
+          <div class="checkbox-row" style="margin-bottom:14px;"><input type="checkbox" id="offerActive" checked><label for="offerActive">Active (visible on website)</label></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Offer</button>
+            <button type="button" class="btn btn-outline" id="offerCancelBtn" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="card"><div id="offersList"><div class="empty-state"><span class="spinner"></span> Loading…</div></div></div>
+    </section>
+
+    <!-- ========== PARTNERS ========== -->
+    <section id="tab-partners" style="display:none;">
+      <div class="page-header"><div><h1>Hotels / Hospitals</h1><p>Partner properties with direct pickup service.</p></div></div>
+      <div class="card">
+        <h3 id="partnerFormTitle"><i class="fas fa-plus"></i> Add New Partner</h3>
+        <form id="partnerForm">
+          <input type="hidden" id="partnerId">
+          <div class="form-grid">
+            <div class="field"><label>Name *</label><input type="text" id="partnerName" required></div>
+            <div class="field"><label>Type</label>
+              <select id="partnerType"><option value="hotel">Hotel</option><option value="hospital">Hospital</option><option value="other">Other</option></select></div>
+          </div>
+          <div class="field" style="margin-bottom:14px;"><label>Address</label><textarea id="partnerAddress" rows="2"></textarea></div>
+          <div class="checkbox-row" style="margin-bottom:14px;"><input type="checkbox" id="partnerActive" checked><label for="partnerActive">Active (visible on website)</label></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Partner</button>
+            <button type="button" class="btn btn-outline" id="partnerCancelBtn" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="card"><div id="partnersList"><div class="empty-state"><span class="spinner"></span> Loading…</div></div></div>
+    </section>
+
+    <!-- ========== GALLERY ========== -->
+    <section id="tab-gallery" style="display:none;">
+      <div class="page-header"><div><h1>Gallery</h1><p>Images shown on the customer website. Use direct image URLs.</p></div></div>
+      <div class="card">
+        <h3 id="galleryFormTitle"><i class="fas fa-plus"></i> Add New Image</h3>
+        <form id="galleryForm">
+          <input type="hidden" id="galleryId">
+          <div class="form-grid">
+            <div class="field"><label>Image URL *</label><input type="url" id="galleryUrl" required placeholder="https://…"></div>
+            <div class="field"><label>Caption</label><input type="text" id="galleryCaption"></div>
+            <div class="field"><label>Order</label><input type="number" id="galleryOrder" value="0"></div>
+          </div>
+          <div id="galleryPreview" style="margin-bottom:14px;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Image</button>
+            <button type="button" class="btn btn-outline" id="galleryTestBtn"><i class="fas fa-eye"></i> Test URL</button>
+            <button type="button" class="btn btn-outline" id="galleryCancelBtn" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="card"><div id="galleryList"><div class="empty-state"><span class="spinner"></span> Loading…</div></div></div>
+    </section>
+
+    <!-- ========== TESTIMONIALS ========== -->
+    <section id="tab-testimonials" style="display:none;">
+      <div class="page-header"><div><h1>Testimonials</h1><p>Customer reviews shown on the website.</p></div></div>
+      <div class="card">
+        <h3 id="testimonialFormTitle"><i class="fas fa-plus"></i> Add New Testimonial</h3>
+        <form id="testimonialForm">
+          <input type="hidden" id="testimonialId">
+          <div class="form-grid">
+            <div class="field"><label>Customer Name *</label><input type="text" id="testimonialAuthor" required></div>
+            <div class="field"><label>Rating</label><select id="testimonialRating"><option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option></select></div>
+            <div class="field"><label>Order</label><input type="number" id="testimonialOrder" value="0"></div>
+          </div>
+          <div class="field" style="margin-bottom:14px;"><label>Review Text *</label><textarea id="testimonialText" rows="3" required></textarea></div>
+          <div class="checkbox-row" style="margin-bottom:14px;"><input type="checkbox" id="testimonialActive" checked><label for="testimonialActive">Active (visible)</label></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> Save Testimonial</button>
+            <button type="button" class="btn btn-outline" id="testimonialCancelBtn" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="card"><div id="testimonialsList"><div class="empty-state"><span class="spinner"></span> Loading…</div></div></div>
+    </section>
+
+    <!-- ========== SETTINGS ========== -->
+    <section id="tab-settings" style="display:none;">
+      <div class="page-header"><div><h1>Site Settings</h1><p>Business info, hero text, and live design controls.</p></div></div>
+      <div class="card">
+        <h3><i class="fas fa-address-card"></i> Contact Details</h3>
+        <form id="settingsForm">
+          <div class="form-grid">
+            <div class="field"><label>Business Name</label><input type="text" id="setBusinessName"></div>
+            <div class="field"><label>Owner Email</label><input type="email" id="setOwnerEmail"></div>
+            <div class="field"><label>Phone</label><input type="text" id="setPhone" placeholder="9555982598"></div>
+            <div class="field"><label>WhatsApp (with country code, no +)</label><input type="text" id="setWhatsapp" placeholder="919555982598"></div>
+          </div>
+          <h3 style="margin-top:20px;"><i class="fas fa-heading"></i> Homepage Text</h3>
+          <div class="form-grid">
+            <div class="field" style="grid-column:1/-1;"><label>Hero Badge</label><input type="text" id="setHeroBadge" placeholder="Premium Garment Care · Varanasi"></div>
+            <div class="field" style="grid-column:1/-1;"><label>Hero Title (use new line for line-break)</label><textarea id="setHeroTitle" rows="2" placeholder="Fresh Clothes.&#10;Less Hassle."></textarea></div>
+            <div class="field" style="grid-column:1/-1;"><label>Hero Subtitle</label><textarea id="setHeroSubtitle" rows="2"></textarea></div>
+          </div>
+          <h3 style="margin-top:20px;"><i class="fas fa-image"></i> Logo & Hero Image</h3>
+          <div class="form-grid">
+            <div class="field" style="grid-column:1/-1;"><label>Logo URL (square image)</label><input type="url" id="setLogoUrl"></div>
+            <div class="field" style="grid-column:1/-1;"><label>Hero Background Image URL</label><input type="url" id="setHeroImageUrl"></div>
+          </div>
+          <h3 style="margin-top:20px;"><i class="fas fa-palette"></i> Theme Colors</h3>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;">Frontend reads <code>primaryColor</code> and <code>accentColor</code> from site_config. Derived tints are auto-generated on the customer site.</p>
+          <div class="form-grid">
+            <div class="field"><label>Primary (dark)</label><input type="color" id="setPrimaryColor" value="#0A0E1B" style="height:48px;padding:4px;"></div>
+            <div class="field"><label>Accent (gold)</label><input type="color" id="setAccentColor" value="#C6A052" style="height:48px;padding:4px;"></div>
+          </div>
+          <h3 style="margin-top:20px;"><i class="fas fa-clock"></i> Business Hours</h3>
+          <div class="form-grid">
+            <div class="field"><label>Opens at (0–23)</label><input type="number" id="setOpenHour" min="0" max="23" placeholder="8"></div>
+            <div class="field"><label>Closes at (0–23)</label><input type="number" id="setCloseHour" min="0" max="23" placeholder="21"></div>
+          </div>
+          <button type="submit" class="btn btn-gold" style="margin-top:12px;"><i class="fas fa-save"></i> Save Settings</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ==================== BOOKING DETAIL DRAWER ==================== -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="bookingDrawer">
+  <div class="drawer-header">
+    <div><h3 id="drawerTitle">Booking Details</h3><div class="sub" id="drawerSub"></div></div>
+    <button class="drawer-close" onclick="closeDrawer()">&times;</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-footer" id="drawerFooter"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+// ============================================================
+// HELPERS
+// ============================================================
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.style.display = 'block';
+  clearTimeout(t._to); t._to = setTimeout(()=> t.style.display='none', 2800);
+}
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(iso){
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ return iso; }
+}
+function fmtMoney(n){ return '₹' + (Number(n)||0).toLocaleString('en-IN'); }
+// Lightweight diagnostics: surface unexpected async failures without breaking the dashboard.
+window.addEventListener('unhandledrejection', event => {
+  console.error('Unhandled async error:', event.reason);
+});
+
+function todayKey(){ const d=new Date(); return d.toISOString().split('T')[0]; }
+function tomorrowKey(){ const d=new Date(); d.setDate(d.getDate()+1); return d.toISOString().split('T')[0]; }
+
+// ============================================================
+// PUSH NOTIFICATIONS (Firebase Cloud Messaging) — alerts the admin even when this
+// panel/tab/browser is fully closed. Requires:
+//   1) A VAPID key: Firebase Console → Project Settings → Cloud Messaging → Web configuration
+//      → "Generate key pair" → paste it below.
+//   2) The file firebase-messaging-sw.js placed at the SITE ROOT (same folder as admin.html).
+//   3) The "send-booking-push" Cloud Function deployed (see functions/index.js) so that a push
+//      is actually triggered whenever a new booking document is created.
+// Until the VAPID key is filled in, this silently does nothing — sound/banner alerts above
+// still work fine whenever the tab is open.
+// ============================================================
+const FCM_VAPID_KEY = "YOUR_FIREBASE_VAPID_KEY";
+
+async function setupPushNotifications(){
+  try {
+    if (!FCM_VAPID_KEY || FCM_VAPID_KEY === 'YOUR_FIREBASE_VAPID_KEY') return;
+    if (!('serviceWorker' in navigator) || !firebase.messaging) return;
+    if (Notification.permission !== 'granted') return;
+
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration });
+    if (!token) return;
+
+    // Save this device's token so the Cloud Function knows where to send pushes.
+    await db.collection('admin_tokens').doc(token).set({
+      token,
+      adminEmail: (auth.currentUser && auth.currentUser.email) || null,
+      updatedAt: new Date().toISOString()
+    });
+
+    // Foreground push (panel open in another tab, this tab focused elsewhere) — show the same banner/sound.
+    messaging.onMessage(payload => {
+      playBookingAlertSound();
+      const data = (payload && payload.data) || {};
+      showNewBookingBanner({
+        _docId: data.bookingDocId || '',
+        bookingId: data.bookingId || '',
+        bookingType: data.bookingType || '',
+        hotelName: data.hotelName || '',
+        customer: { name: data.customerName || 'Customer' },
+        totals: { grandTotal: Number(data.grandTotal) || 0 }
+      });
+    });
+  } catch (err) {
+    console.warn('Push notification setup skipped/failed (sound+banner alerts still work when tab is open):', err);
+  }
+}
+
+if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY) {
+  document.getElementById('loginError').textContent = 'Firebase not configured. Check firebase-config.js.';
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+document.getElementById('loginForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  errEl.style.color = 'var(--danger)';
+
+  if (!email || !password) {
+    errEl.textContent = 'Please enter your email and password.';
+    return;
+  }
+  if (typeof FIREBASE_READY === 'undefined' || !FIREBASE_READY || !window.auth) {
+    errEl.textContent = 'Firebase is not ready. Please refresh the page and try again.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing in…';
+
+  try {
+    const loginPromise = auth.signInWithEmailAndPassword(email, password);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('LOGIN_TIMEOUT')), 15000);
+    });
+    await Promise.race([loginPromise, timeoutPromise]);
+  } catch (err) {
+    console.error('Admin login error:', err);
+    const code = err && err.code;
+    if (err && err.message === 'LOGIN_TIMEOUT') {
+      errEl.textContent = 'Login timed out. Check your internet connection and try again.';
+    } else if (code === 'auth/invalid-login-credentials' || code === 'auth/wrong-password') {
+      errEl.textContent = 'Incorrect email or password.';
+    } else if (code === 'auth/user-not-found') {
+      errEl.textContent = 'Admin account not found.';
+    } else if (code === 'auth/too-many-requests') {
+      errEl.textContent = 'Too many attempts. Please wait a few minutes and try again.';
+    } else if (code === 'auth/network-request-failed') {
+      errEl.textContent = 'Network error. Please check your internet and try again.';
+    } else {
+      errEl.textContent = 'Login failed: ' + (err.message || 'Unable to sign in.');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-lock"></i> SIGN IN';
+  }
+});
+
+// Password reset — uses Firebase's built-in reset email flow.
+const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+if (forgotPasswordBtn) {
+  forgotPasswordBtn.addEventListener('click', async () => {
+    const emailInput = document.getElementById('loginEmail');
+    const email = emailInput.value.trim();
+    const errEl = document.getElementById('loginError');
+    if (!email) {
+      errEl.textContent = 'Enter your admin email first, then tap Forgot password.';
+      emailInput.focus();
+      return;
+    }
+    if (!window.auth) {
+      errEl.textContent = 'Firebase is not ready. Please refresh and try again.';
+      return;
+    }
+    forgotPasswordBtn.disabled = true;
+    try {
+      await auth.sendPasswordResetEmail(email);
+      errEl.style.color = 'var(--success)';
+      errEl.textContent = 'Password reset email sent. Check your inbox/spam folder.';
+    } catch (err) {
+      console.error('Password reset error:', err);
+      errEl.style.color = 'var(--danger)';
+      errEl.textContent = 'Could not send reset email. Check the email and Firebase Auth settings.';
+    } finally {
+      forgotPasswordBtn.disabled = false;
+    }
+  });
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  if (!window.auth) return;
+  if (confirm('Sign out of Admin Portal?')) {
+    try { await auth.signOut(); } catch (err) { console.error('Logout error:', err); }
+  }
+});
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('loggedInEmail').textContent = user.email || '';
+    initAllListeners();
+    requestNotificationPermissionOnce();
+    setupPushNotifications(); // registers this device for alerts even when the panel/tab is fully closed
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loggedInEmail').textContent = '';
+  }
+}, err => {
+  console.error('Auth state error:', err);
+  document.getElementById('loginError').textContent = 'Authentication connection error. Please refresh and try again.';
+});
+
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+function switchTab(tab){
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.tab === tab));
+  document.querySelectorAll('.main > section').forEach(s => s.style.display = 'none');
+  const el = document.getElementById('tab-' + tab);
+  if (el) el.style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => switchTab(item.dataset.tab));
+});
+
+let listenersInitialized = false;
+function initAllListeners(){
+  if (listenersInitialized) return;
+  listenersInitialized = true;
+  const modules = [
+    ['Bookings', initBookings], ['Offers', initOffers], ['Partners', initPartners],
+    ['Pricing', initPricing], ['Gallery', initGallery], ['Testimonials', initTestimonials],
+    ['Settings', initSettings]
+  ];
+  modules.forEach(([name, fn]) => {
+    try { fn(); } catch (err) { console.error(name + ' module failed to initialize:', err); }
+  });
+}
+
+// ============================================================
+// BOOKINGS
+// ============================================================
+let allBookings = [];
+let bookingFilter = 'all';
+let bookingSearchTerm = '';
+let bookingsFirstLoadDone = false; // so we don't "alert" for every booking already in the DB on first page load
+
+// ============================================================
+// NEW-BOOKING ALERT (sound + on-screen banner + OS notification popup)
+// Fires the instant a new booking document appears in Firestore, as long as this
+// browser tab is open (foreground OR background). For alerts while the tab/panel is
+// fully closed, see the Firebase Cloud Messaging (push) setup further below.
+// ============================================================
+function playBookingAlertSound(){
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.18, 0.36].forEach(delay => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.16);
+    });
+  } catch (e) { console.warn('Alert sound failed:', e); }
+}
+
+function showNewBookingBanner(booking){
+  let banner = document.getElementById('newBookingBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'newBookingBanner';
+    banner.style.cssText = 'position:fixed; top:16px; right:16px; left:16px; max-width:420px; margin-left:auto; z-index:9999; background:var(--success,#16a34a); color:#fff; padding:14px 16px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.25); cursor:pointer; font-size:0.92rem; display:flex; gap:10px; align-items:flex-start;';
+    document.body.appendChild(banner);
+  }
+  const type = booking.bookingType === 'HOTEL' ? ('🏨 ' + (booking.hotelName || 'Hotel guest')) : 'Regular pickup';
+  banner.innerHTML = `<i class="fas fa-bell" style="margin-top:2px;"></i><div>
+      <strong>New booking received!</strong><br>
+      ${esc(booking.customer && booking.customer.name || 'Customer')} — ${esc(type)} — ${fmtMoney(booking.totals && booking.totals.grandTotal)}<br>
+      <span style="font-size:0.78rem; opacity:0.9;">${esc(booking.bookingId || '')} · tap to open</span>
+    </div>`;
+  banner.onclick = () => { switchTab('bookings'); openBookingDrawer(booking._docId); banner.remove(); };
+  clearTimeout(banner._to);
+  banner._to = setTimeout(() => banner.remove(), 12000);
+}
+
+function showBrowserNotificationPopup(booking){
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const type = booking.bookingType === 'HOTEL' ? ('Hotel guest — ' + (booking.hotelName || '')) : 'Regular pickup';
+  const n = new Notification('New booking received!', {
+    body: `${booking.customer && booking.customer.name || 'Customer'} — ${type} — ${fmtMoney(booking.totals && booking.totals.grandTotal)}`,
+    icon: 'https://www.gstatic.com/firebasejs/favicon.ico', // replace with your own logo URL if you have one
+    tag: booking._docId
+  });
+  n.onclick = () => { window.focus(); switchTab('bookings'); openBookingDrawer(booking._docId); };
+}
+
+function requestNotificationPermissionOnce(){
+  if (!('Notification' in window) || Notification.permission !== 'default') return;
+  // Ask right when the admin logs in, in direct response to their sign-in action — browsers
+  // are far more likely to grant permission when the prompt follows a real user action.
+  Notification.requestPermission().catch(() => {});
+}
+
+function initBookings(){
+  db.collection('bookings').orderBy('createdAt', 'desc').limit(200)
+    .onSnapshot(snap => {
+      allBookings = snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+
+      if (bookingsFirstLoadDone) {
+        snap.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            const booking = { _docId: change.doc.id, ...change.doc.data() };
+            playBookingAlertSound();
+            showNewBookingBanner(booking);
+            showBrowserNotificationPopup(booking);
+          }
+        });
+      } else {
+        bookingsFirstLoadDone = true; // skip alerting for bookings that already existed before this page load
+      }
+
+      updateDashboardMetrics();
+      updateNavBadge();
+      renderBookingsList();
+    }, err => {
+      console.error('Bookings listener error:', err);
+      document.getElementById('bookingsList').innerHTML = '<div class="empty-state"><strong>Could not load bookings</strong>Check Firestore rules or connection.</div>';
+    });
+}
+
+function updateNavBadge(){
+  const newCount = allBookings.filter(b => (b.status || 'new') === 'new').length;
+  const badge = document.getElementById('navBookingCount');
+  if (newCount > 0) { badge.textContent = newCount > 99 ? '99+' : newCount; badge.style.display = 'inline-block'; }
+  else badge.style.display = 'none';
+}
+
+function updateDashboardMetrics(){
+  const today = todayKey();
+  const todayBookings = allBookings.filter(b => (b.createdAt || '').startsWith(today));
+  const newCount = allBookings.filter(b => (b.status || 'new') === 'new').length;
+  const progCount = allBookings.filter(b => b.status === 'in-progress').length;
+  const doneCount = allBookings.filter(b => b.status === 'done').length;
+  const todayRev = todayBookings.reduce((s,b) => s + ((b.totals && b.totals.grandTotal) || 0), 0);
+
+  document.getElementById('mToday').textContent = todayBookings.length;
+  document.getElementById('mTodaySub').textContent = todayBookings.length === 1 ? 'booking today' : 'bookings today';
+  document.getElementById('mNew').textContent = newCount;
+  document.getElementById('mProgress').textContent = progCount;
+  document.getElementById('mDone').textContent = doneCount;
+  document.getElementById('mRevenue').textContent = fmtMoney(todayRev);
+
+  // Recent bookings preview
+  const recent = allBookings.slice(0, 6);
+  const rc = document.getElementById('recentBookings');
+  if (!recent.length) {
+    rc.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><strong>No bookings yet</strong>New bookings will appear here in real time.</div>';
+    return;
+  }
+  rc.innerHTML = '<table><thead><tr><th>Booking</th><th>Customer</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>' +
+    recent.map(b => {
+      const st = statusMeta(b.status);
+      return `<tr style="cursor:pointer;" onclick="openBookingDrawer('${b._docId}')">
+        <td data-label="Booking"><div class="val-wrap"><strong>${esc(b.bookingId || b._docId)}</strong><div style="font-size:.72rem;color:var(--muted);">${esc(fmtDate(b.createdAt))}</div></div></td>
+        <td data-label="Customer"><div class="val-wrap">${esc(b.customer && b.customer.name || '—')}<div style="font-size:.72rem;color:var(--muted);">${esc(b.customer && b.customer.phone || '')}</div></div></td>
+        <td data-label="Type"><div class="val-wrap">${b.bookingType === 'HOTEL' ? '🏨 ' + esc(b.hotelName || 'Hotel') : 'Regular'}</div></td>
+        <td data-label="Amount"><div class="val-wrap"><strong>${fmtMoney(b.totals && b.totals.grandTotal)}</strong></div></td>
+        <td data-label="Status"><div class="val-wrap"><span class="badge ${st.cls}">${st.text}</span></div></td>
+      </tr>`;
+    }).join('') + '</tbody></table>';
+}
+
+function statusMeta(status){
+  if (status === 'in-progress') return { text: 'In Progress', cls: 'status-in-progress' };
+  if (status === 'done') return { text: 'Done', cls: 'status-done' };
+  return { text: 'New', cls: 'status-new' };
+}
+
+document.getElementById('bookingSearch').addEventListener('input', e => {
+  bookingSearchTerm = e.target.value.trim().toLowerCase();
+  renderBookingsList();
+});
+document.getElementById('bookingFilters').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  document.querySelectorAll('#bookingFilters .pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  bookingFilter = pill.dataset.filter;
+  renderBookingsList();
+});
+
+function renderBookingsList(){
+  const list = document.getElementById('bookingsList');
+  let filtered = allBookings.slice();
+
+  if (bookingFilter === 'new' || bookingFilter === 'in-progress' || bookingFilter === 'done') {
+    filtered = filtered.filter(b => (b.status || 'new') === bookingFilter);
+  } else if (bookingFilter === 'REGULAR' || bookingFilter === 'HOTEL') {
+    filtered = filtered.filter(b => (b.bookingType || 'REGULAR') === bookingFilter);
+  } else if (bookingFilter === 'today') {
+    filtered = filtered.filter(b => (b.createdAt || '').startsWith(todayKey()));
+  } else if (bookingFilter === 'tomorrow') {
+    filtered = filtered.filter(b => (b.createdAt || '').startsWith(tomorrowKey()));
+  }
+
+  if (bookingSearchTerm) {
+    const t = bookingSearchTerm;
+    filtered = filtered.filter(b => {
+      const hay = [
+        b.bookingId, b._docId,
+        b.customer && b.customer.name,
+        b.customer && b.customer.phone,
+        b.hotelName,
+        b.roomNumber
+      ].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(t);
+    });
+  }
+
+  document.getElementById('bookingsSubtitle').textContent = `${filtered.length} of ${allBookings.length} bookings shown`;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><strong>No matching bookings</strong>Try a different filter or search term.</div>';
+    return;
+  }
+
+  list.innerHTML = '<table><thead><tr><th>Booking ID</th><th>Type</th><th>Customer</th><th>Phone</th><th>Items</th><th>Amount</th><th>Pickup</th><th>Status</th><th></th></tr></thead><tbody>' +
+    filtered.slice(0, 100).map(b => {
+      const st = statusMeta(b.status);
+      const items = (b.cartItems || []).map(i => `${i.name} ×${i.quantity}`).join(', ');
+      const pickupDate = (b.pickup && b.pickup.date) || '—';
+      return `<tr>
+        <td data-label="Booking ID"><div class="val-wrap"><strong>${esc(b.bookingId || b._docId)}</strong><div style="font-size:.72rem;color:var(--muted);">${esc(fmtDate(b.createdAt))}</div></div></td>
+        <td data-label="Type"><div class="val-wrap">${b.bookingType === 'HOTEL' ? '🏨 ' + esc(b.hotelName || 'Hotel') + (b.roomNumber ? ' (Rm ' + esc(b.roomNumber) + ')' : '') : 'Regular'}</div></td>
+        <td data-label="Customer"><div class="val-wrap">${esc(b.customer && b.customer.name || '—')}</div></td>
+        <td data-label="Phone"><div class="val-wrap">${esc(b.customer && b.customer.phone || '—')}</div></td>
+        <td data-label="Items"><div class="val-wrap" style="font-size:.76rem;color:var(--muted);max-width:200px;">${esc(items) || '—'}</div></td>
+        <td data-label="Amount"><div class="val-wrap"><strong>${fmtMoney(b.totals && b.totals.grandTotal)}</strong></div></td>
+        <td data-label="Pickup"><div class="val-wrap" style="font-size:.8rem;">${esc(pickupDate)}</div></td>
+        <td data-label="Status">
+          <div class="val-wrap">
+            <select class="status-select" onchange="updateBookingStatus('${b._docId}', this.value)">
+              <option value="new" ${(b.status||'new')==='new'?'selected':''}>New</option>
+              <option value="in-progress" ${b.status==='in-progress'?'selected':''}>In Progress</option>
+              <option value="done" ${b.status==='done'?'selected':''}>Done</option>
+            </select>
+          </div>
+        </td>
+        <td data-label="Actions"><div class="val-wrap"><button class="btn btn-outline btn-sm" onclick="openBookingDrawer('${b._docId}')"><i class="fas fa-eye"></i> View</button></div></td>
+      </tr>`;
+    }).join('') + '</tbody></table>';
+}
+
+window.updateBookingStatus = async function(docId, status){
+  try {
+    await db.collection('bookings').doc(docId).update({ status });
+    showToast('Status → ' + status, 'success');
+  } catch(e){ showToast('Failed: ' + e.message, 'error'); }
+};
+
+// ============================================================
+// BOOKING DETAIL DRAWER
+// ============================================================
+window.openBookingDrawer = function(docId){
+  const b = allBookings.find(x => x._docId === docId);
+  if (!b) return;
+  const st = statusMeta(b.status);
+  const cust = b.customer || {};
+  const items = b.cartItems || [];
+  const totals = b.totals || {};
+
+  document.getElementById('drawerTitle').textContent = b.bookingId || docId;
+  document.getElementById('drawerSub').innerHTML = `${st.text} • ${esc(fmtDate(b.createdAt))}`;
+
+  let html = '';
+
+  // Customer
+  html += `<div class="detail-section"><h4><i class="fas fa-user"></i> Customer</h4>
+    <div class="detail-row"><span class="lbl">Name</span><span class="val">${esc(cust.name || '—')}</span></div>
+    <div class="detail-row"><span class="lbl">Phone</span><span class="val">${esc(cust.phone || '—')}</span></div>
+    ${cust.email ? `<div class="detail-row"><span class="lbl">Email</span><span class="val">${esc(cust.email)}</span></div>` : ''}
+    ${b.bookingType === 'HOTEL' ? `<div class="detail-row"><span class="lbl">WhatsApp</span><span class="val">${cust.whatsappAvailable ? 'Available' : 'Not available'}</span></div>` : ''}
+  </div>`;
+
+  // Booking meta
+  html += `<div class="detail-section"><h4><i class="fas fa-info-circle"></i> Booking</h4>
+    <div class="detail-row"><span class="lbl">Type</span><span class="val">${b.bookingType === 'HOTEL' ? '🏨 Hotel' : 'Regular'}</span></div>
+    <div class="detail-row"><span class="lbl">Created</span><span class="val">${esc(fmtDate(b.createdAt))}</span></div>
+    ${b.pickup && b.pickup.date ? `<div class="detail-row"><span class="lbl">Pickup Date</span><span class="val">${esc(b.pickup.date)}</span></div>` : ''}
+    ${b.pickup && b.pickup.time ? `<div class="detail-row"><span class="lbl">Pickup Time</span><span class="val">${esc(b.pickup.time)}</span></div>` : ''}
+    ${b.pickup && b.pickup.address ? `<div class="detail-row"><span class="lbl">Address</span><span class="val">${esc(b.pickup.address)}</span></div>` : ''}
+    ${b.pickup && b.pickup.pincode ? `<div class="detail-row"><span class="lbl">Pincode</span><span class="val">${esc(b.pickup.pincode)}</span></div>` : ''}
+    ${b.hotelName ? `<div class="detail-row"><span class="lbl">Hotel/Hospital</span><span class="val">${esc(b.hotelName)}</span></div>` : ''}
+    ${b.roomNumber ? `<div class="detail-row"><span class="lbl">Room</span><span class="val">${esc(b.roomNumber)}</span></div>` : ''}
+    ${b.delivery && b.delivery.preference ? `<div class="detail-row"><span class="lbl">Delivery</span><span class="val">${esc(b.delivery.preference)}</span></div>` : ''}
+  </div>`;
+
+  // Items
+  html += `<div class="detail-section"><h4><i class="fas fa-tshirt"></i> Laundry Items</h4>`;
+  if (items.length) {
+    items.forEach(i => {
+      html += `<div class="item-line">
+        <div><div class="nm">${esc(i.name)}</div><div class="qty">${esc(i.serviceLabel || '')} × ${i.quantity} @ ${fmtMoney(i.unitPrice)}</div></div>
+        <div style="font-weight:700;">${fmtMoney((i.unitPrice||0) * (i.quantity||1))}</div>
+      </div>`;
+    });
+  } else {
+    html += '<div style="color:var(--muted);font-size:.85rem;">No items recorded.</div>';
+  }
+  html += `<div class="total-line"><span>Grand Total</span><span>${fmtMoney(totals.grandTotal)}</span></div></div>`;
+
+  if (b.specialInstructions) {
+    html += `<div class="detail-section"><h4><i class="fas fa-comment"></i> Special Instructions</h4>
+      <div style="background:var(--surface-alt);padding:12px;border-radius:8px;font-size:.85rem;">${esc(b.specialInstructions)}</div></div>`;
+  }
+
+  document.getElementById('drawerBody').innerHTML = html;
+
+  // Footer actions
+  const phone = (cust.phone || '').replace(/[^\d+]/g, '');
+  const wa = (cust.phone || '').replace(/[^\d]/g, '');
+  document.getElementById('drawerFooter').innerHTML = `
+    <button class="btn btn-teal" onclick="updateBookingStatus('${docId}','in-progress'); closeDrawer();"><i class="fas fa-spinner"></i> Mark In Progress</button>
+    <button class="btn btn-gold" onclick="updateBookingStatus('${docId}','done'); closeDrawer();"><i class="fas fa-check"></i> Mark Done</button>
+    ${phone ? `<a class="btn btn-outline" href="tel:${esc(phone)}"><i class="fas fa-phone"></i> Call</a>` : ''}
+    ${wa ? `<a class="btn btn-outline" href="https://wa.me/${esc(wa)}" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>` : ''}
+    <button class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+  `;
+
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.getElementById('bookingDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeDrawer = function(){
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.getElementById('bookingDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+// ============================================================
+// OFFERS
+// ============================================================
+function initOffers(){
+  document.getElementById('offerForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('offerId').value;
+    const data = {
+      icon: document.getElementById('offerIcon').value || '🎉',
+      title: document.getElementById('offerTitle').value.trim(),
+      subtitle: document.getElementById('offerSubtitle').value.trim(),
+      order: Number(document.getElementById('offerOrder').value) || 0,
+      active: document.getElementById('offerActive').checked
+    };
+    if (!data.title) { showToast('Title is required', 'error'); return; }
+    try {
+      if (id) await db.collection('offers').doc(id).update(data);
+      else await db.collection('offers').add(data);
+      showToast('Offer saved', 'success');
+      resetOfferForm();
+    } catch(err){ showToast('Error: ' + err.message, 'error'); }
+  });
+  document.getElementById('offerCancelBtn').addEventListener('click', resetOfferForm);
+
+  db.collection('offers').orderBy('order','asc').onSnapshot(snap => {
+    const list = document.getElementById('offersList');
+    if (snap.empty) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-tags"></i><strong>No offers yet</strong>Create your first promotional offer above.</div>';
+      document.getElementById('mOffers').textContent = '0';
+      return;
+    }
+    let activeCount = 0;
+    let html = '<table><thead><tr><th>Icon</th><th>Title</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const o = doc.data();
+      if (o.active) activeCount++;
+      html += `<tr>
+        <td data-label="Icon"><div class="val-wrap">${esc(o.icon||'')}</div></td>
+        <td data-label="Title"><div class="val-wrap"><strong>${esc(o.title||'')}</strong><div style="font-size:.75rem;color:var(--muted);">${esc(o.subtitle||'')}</div></div></td>
+        <td data-label="Order"><div class="val-wrap">${o.order||0}</div></td>
+        <td data-label="Status"><div class="val-wrap"><span class="badge ${o.active?'active':'inactive'}">${o.active?'Active':'Hidden'}</span></div></td>
+        <td data-label="Actions"><div class="val-wrap row-actions">
+          <button class="btn btn-outline btn-sm" onclick='editOffer(${JSON.stringify({id:doc.id,...o})})'><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoc('offers','${doc.id}','Offer')"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+    document.getElementById('mOffers').textContent = activeCount;
+  });
+}
+window.editOffer = function(o){
+  document.getElementById('offerId').value = o.id;
+  document.getElementById('offerIcon').value = o.icon || '';
+  document.getElementById('offerTitle').value = o.title || '';
+  document.getElementById('offerSubtitle').value = o.subtitle || '';
+  document.getElementById('offerOrder').value = o.order || 0;
+  document.getElementById('offerActive').checked = !!o.active;
+  document.getElementById('offerFormTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Offer';
+  document.getElementById('offerCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetOfferForm(){
+  document.getElementById('offerForm').reset();
+  document.getElementById('offerId').value = '';
+  document.getElementById('offerActive').checked = true;
+  document.getElementById('offerFormTitle').innerHTML = '<i class="fas fa-plus"></i> Add New Offer';
+  document.getElementById('offerCancelBtn').style.display = 'none';
+}
+
+// ============================================================
+// PARTNERS
+// ============================================================
+function initPartners(){
+  document.getElementById('partnerForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('partnerId').value;
+    const data = {
+      name: document.getElementById('partnerName').value.trim(),
+      type: document.getElementById('partnerType').value,
+      address: document.getElementById('partnerAddress').value.trim(),
+      active: document.getElementById('partnerActive').checked
+    };
+    if (!data.name) { showToast('Name required', 'error'); return; }
+    try {
+      if (id) await db.collection('partners').doc(id).update(data);
+      else await db.collection('partners').add(data);
+      showToast('Partner saved', 'success');
+      resetPartnerForm();
+    } catch(err){ showToast('Error: ' + err.message, 'error'); }
+  });
+  document.getElementById('partnerCancelBtn').addEventListener('click', resetPartnerForm);
+
+  db.collection('partners').onSnapshot(snap => {
+    const list = document.getElementById('partnersList');
+    if (snap.empty) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-hotel"></i><strong>No partners yet</strong>Add your first hotel or hospital partner.</div>';
+      return;
+    }
+    let html = '<table><thead><tr><th>Name</th><th>Type</th><th>Address</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const p = doc.data();
+      html += `<tr>
+        <td data-label="Name"><div class="val-wrap"><strong>${esc(p.name||'')}</strong></div></td>
+        <td data-label="Type"><div class="val-wrap">${esc((p.type||'hotel').toUpperCase())}</div></td>
+        <td data-label="Address"><div class="val-wrap" style="font-size:.8rem;">${esc(p.address||'')}</div></td>
+        <td data-label="Status"><div class="val-wrap"><span class="badge ${p.active?'active':'inactive'}">${p.active?'Active':'Hidden'}</span></div></td>
+        <td data-label="Actions"><div class="val-wrap row-actions">
+          <button class="btn btn-outline btn-sm" onclick='editPartner(${JSON.stringify({id:doc.id,...p})})'><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoc('partners','${doc.id}','Partner')"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+  });
+}
+window.editPartner = function(p){
+  document.getElementById('partnerId').value = p.id;
+  document.getElementById('partnerName').value = p.name || '';
+  document.getElementById('partnerType').value = p.type || 'hotel';
+  document.getElementById('partnerAddress').value = p.address || '';
+  document.getElementById('partnerActive').checked = !!p.active;
+  document.getElementById('partnerFormTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Partner';
+  document.getElementById('partnerCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetPartnerForm(){
+  document.getElementById('partnerForm').reset();
+  document.getElementById('partnerId').value = '';
+  document.getElementById('partnerActive').checked = true;
+  document.getElementById('partnerFormTitle').innerHTML = '<i class="fas fa-plus"></i> Add New Partner';
+  document.getElementById('partnerCancelBtn').style.display = 'none';
+}
+
+// ============================================================
+// PRICING
+// ============================================================
+let currentPricingCat = 'gents';
+let allPricingItems = [];
+let pricingSearchTerm = '';
+
+document.querySelectorAll('#pricingCategoryTabs .pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#pricingCategoryTabs .pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPricingCat = btn.dataset.cat;
+    renderItemsList();
+  });
+});
+document.getElementById('pricingSearch').addEventListener('input', e => {
+  pricingSearchTerm = e.target.value.trim().toLowerCase();
+  renderItemsList();
+});
+document.getElementById('itemWashType').addEventListener('change', function(){
+  const v = this.value;
+  document.getElementById('washFixedField').style.display = v === 'fixed' ? 'block' : 'none';
+  document.getElementById('washTiersField').style.display = v === 'tiers' ? 'block' : 'none';
+  document.getElementById('washSingleDoubleField').style.display = v === 'single_double' ? 'block' : 'none';
+});
+document.getElementById('itemCategory').addEventListener('change', function(){
+  document.getElementById('itemPriceFields').style.display = (this.value === 'special' || this.value === 'bulk') ? 'none' : 'block';
+});
+
+function initPricing(){
+  document.getElementById('itemForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('itemId').value;
+    const category = document.getElementById('itemCategory').value;
+    const name = document.getElementById('itemName').value.trim();
+    if (!name) { showToast('Item name required', 'error'); return; }
+    const data = {
+      category, name,
+      order: Number(document.getElementById('itemOrder').value) || 0,
+      active: document.getElementById('itemActive').value === 'true'
+    };
+    if (category !== 'special' && category !== 'bulk') {
+      const washType = document.getElementById('itemWashType').value;
+      data.press = document.getElementById('itemPress').value === '' ? null : Number(document.getElementById('itemPress').value);
+      data.washType = washType;
+      if (washType === 'fixed') {
+        data.wash = document.getElementById('itemWash').value === '' ? null : Number(document.getElementById('itemWash').value);
+      } else if (washType === 'tiers') {
+        data.tiersJson = JSON.stringify([
+          { label:'Basic', price: Number(document.getElementById('tierBasic').value)||0 },
+          { label:'Standard', price: Number(document.getElementById('tierStandard').value)||0 },
+          { label:'Premium', price: Number(document.getElementById('tierPremium').value)||0 }
+        ]);
+      } else if (washType === 'single_double') {
+        data.tiersJson = JSON.stringify({
+          single: Number(document.getElementById('priceSingle').value)||0,
+          double: Number(document.getElementById('priceDouble').value)||0
+        });
+      }
+    }
+    try {
+      if (id) await db.collection('pricing').doc(id).update(data);
+      else await db.collection('pricing').add(data);
+      showToast('Item saved', 'success');
+      resetItemForm();
+    } catch(err){ showToast('Error: ' + err.message, 'error'); }
+  });
+  document.getElementById('itemCancelBtn').addEventListener('click', resetItemForm);
+
+  db.collection('pricing').onSnapshot(snap => {
+    allPricingItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderItemsList();
+  }, err => {
+    document.getElementById('itemsList').innerHTML = '<div class="empty-state"><strong>Could not load pricing</strong>Check Firestore rules.</div>';
+  });
+}
+
+function renderItemsList(){
+  let items = allPricingItems.filter(i => i.category === currentPricingCat);
+  if (pricingSearchTerm) items = items.filter(i => (i.name||'').toLowerCase().includes(pricingSearchTerm));
+  items.sort((a,b) => (a.order||0) - (b.order||0));
+
+  const list = document.getElementById('itemsList');
+  if (!items.length) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-tshirt"></i><strong>No items in this category</strong>Add your first item using the form above.</div>';
+    return;
+  }
+  let html = '<table><thead><tr><th>Name</th><th>Press</th><th>Wash</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  items.forEach(i => {
+    let washDisplay = '—';
+    if (i.washType === 'fixed') washDisplay = i.wash != null ? fmtMoney(i.wash) : '—';
+    else if (i.washType === 'tiers') washDisplay = 'Tiers';
+    else if (i.washType === 'single_double') washDisplay = 'Single/Double';
+    html += `<tr>
+      <td data-label="Name"><div class="val-wrap"><strong>${esc(i.name)}</strong></div></td>
+      <td data-label="Press"><div class="val-wrap">${i.press != null ? fmtMoney(i.press) : '—'}</div></td>
+      <td data-label="Wash"><div class="val-wrap">${washDisplay}</div></td>
+      <td data-label="Order"><div class="val-wrap">${i.order||0}</div></td>
+      <td data-label="Status"><div class="val-wrap"><span class="badge ${i.active !== false ? 'active' : 'inactive'}">${i.active !== false ? 'Active' : 'Hidden'}</span></div></td>
+      <td data-label="Actions"><div class="val-wrap row-actions">
+        <button class="btn btn-outline btn-sm" onclick='editItem(${JSON.stringify(i)})'><i class="fas fa-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteDoc('pricing','${i.id}','Item')"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  list.innerHTML = html;
+}
+
+window.editItem = function(i){
+  document.getElementById('itemId').value = i.id;
+  document.getElementById('itemCategory').value = i.category;
+  document.getElementById('itemName').value = i.name;
+  document.getElementById('itemOrder').value = i.order || 0;
+  document.getElementById('itemActive').value = (i.active !== false) ? 'true' : 'false';
+  document.getElementById('itemPriceFields').style.display = (i.category === 'special' || i.category === 'bulk') ? 'none' : 'block';
+  if (i.category !== 'special' && i.category !== 'bulk') {
+    document.getElementById('itemPress').value = i.press != null ? i.press : '';
+    document.getElementById('itemWashType').value = i.washType || 'fixed';
+    document.getElementById('itemWashType').dispatchEvent(new Event('change'));
+    if (i.washType === 'fixed') document.getElementById('itemWash').value = i.wash != null ? i.wash : '';
+    if (i.washType === 'tiers' && i.tiersJson) {
+      try { const t = JSON.parse(i.tiersJson);
+        document.getElementById('tierBasic').value = t[0]?.price||'';
+        document.getElementById('tierStandard').value = t[1]?.price||'';
+        document.getElementById('tierPremium').value = t[2]?.price||'';
+      } catch(e){}
+    }
+    if (i.washType === 'single_double' && i.tiersJson) {
+      try { const t = JSON.parse(i.tiersJson);
+        document.getElementById('priceSingle').value = t.single||'';
+        document.getElementById('priceDouble').value = t.double||'';
+      } catch(e){}
+    }
+  }
+  document.getElementById('itemFormTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Item';
+  document.getElementById('itemCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetItemForm(){
+  document.getElementById('itemForm').reset();
+  document.getElementById('itemId').value = '';
+  document.getElementById('itemPriceFields').style.display = 'block';
+  document.getElementById('itemWashType').dispatchEvent(new Event('change'));
+  document.getElementById('itemFormTitle').innerHTML = '<i class="fas fa-plus"></i> Add New Item';
+  document.getElementById('itemCancelBtn').style.display = 'none';
+}
+
+// ============================================================
+// GALLERY
+// ============================================================
+function initGallery(){
+  document.getElementById('galleryForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('galleryId').value;
+    const data = {
+      url: document.getElementById('galleryUrl').value.trim(),
+      caption: document.getElementById('galleryCaption').value.trim(),
+      order: Number(document.getElementById('galleryOrder').value) || 0
+    };
+    if (!data.url) { showToast('Image URL required', 'error'); return; }
+    try {
+      if (id) await db.collection('gallery').doc(id).update(data);
+      else await db.collection('gallery').add(data);
+      showToast('Image saved', 'success');
+      resetGalleryForm();
+    } catch(err){ showToast('Error: ' + err.message, 'error'); }
+  });
+  document.getElementById('galleryCancelBtn').addEventListener('click', resetGalleryForm);
+  document.getElementById('galleryTestBtn').addEventListener('click', testGalleryUrl);
+
+  db.collection('gallery').orderBy('order','asc').onSnapshot(snap => {
+    const list = document.getElementById('galleryList');
+    if (snap.empty) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-images"></i><strong>No gallery images</strong>Add your first website image.</div>';
+      return;
+    }
+    let html = '<table><thead><tr><th>Preview</th><th>Caption</th><th>Order</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const g = doc.data();
+      html += `<tr>
+        <td data-label="Preview"><div class="val-wrap"><img src="${esc(g.url)}" style="width:80px;height:56px;object-fit:cover;border-radius:6px;" onerror="this.style.opacity=.3"></div></td>
+        <td data-label="Caption"><div class="val-wrap">${esc(g.caption||'—')}</div></td>
+        <td data-label="Order"><div class="val-wrap">${g.order||0}</div></td>
+        <td data-label="Actions"><div class="val-wrap row-actions">
+          <button class="btn btn-outline btn-sm" onclick='editGallery(${JSON.stringify({id:doc.id,...g})})'><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoc('gallery','${doc.id}','Image')"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+  });
+}
+
+function testGalleryUrl(){
+  const url = document.getElementById('galleryUrl').value.trim();
+  const prev = document.getElementById('galleryPreview');
+  if (!url) { showToast('Enter a URL first', 'error'); return; }
+  prev.innerHTML = '<div style="font-size:.8rem;color:var(--muted);"><span class="spinner"></span> Testing image…</div>';
+  const img = new Image();
+  img.onload = () => {
+    prev.innerHTML = `<div style="display:flex;gap:12px;align-items:center;"><img src="${esc(url)}" style="width:120px;height:80px;object-fit:cover;border-radius:8px;"><div style="font-size:.78rem;color:var(--success);"><i class="fas fa-check-circle"></i> Image loaded (${img.naturalWidth}×${img.naturalHeight})</div></div>`;
+  };
+  img.onerror = () => {
+    prev.innerHTML = '<div style="font-size:.8rem;color:var(--danger);padding:10px;background:#FEE2E2;border-radius:8px;"><i class="fas fa-exclamation-triangle"></i> Image could not be loaded. This URL may not be a direct image link (Google Drive sharing pages won\'t work).</div>';
+  };
+  img.src = url;
+}
+
+window.editGallery = function(g){
+  document.getElementById('galleryId').value = g.id;
+  document.getElementById('galleryUrl').value = g.url || '';
+  document.getElementById('galleryCaption').value = g.caption || '';
+  document.getElementById('galleryOrder').value = g.order || 0;
+  document.getElementById('galleryFormTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Image';
+  document.getElementById('galleryCancelBtn').style.display = 'inline-flex';
+  testGalleryUrl();
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetGalleryForm(){
+  document.getElementById('galleryForm').reset();
+  document.getElementById('galleryId').value = '';
+  document.getElementById('galleryPreview').innerHTML = '';
+  document.getElementById('galleryFormTitle').innerHTML = '<i class="fas fa-plus"></i> Add New Image';
+  document.getElementById('galleryCancelBtn').style.display = 'none';
+}
+
+// ============================================================
+// TESTIMONIALS
+// ============================================================
+function initTestimonials(){
+  document.getElementById('testimonialForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const id = document.getElementById('testimonialId').value;
+    const data = {
+      author: document.getElementById('testimonialAuthor').value.trim(),
+      text: document.getElementById('testimonialText').value.trim(),
+      rating: Number(document.getElementById('testimonialRating').value) || 5,
+      order: Number(document.getElementById('testimonialOrder').value) || 0,
+      active: document.getElementById('testimonialActive').checked
+    };
+    if (!data.author || !data.text) { showToast('Name and review required', 'error'); return; }
+    try {
+      if (id) await db.collection('testimonials').doc(id).update(data);
+      else await db.collection('testimonials').add(data);
+      showToast('Testimonial saved', 'success');
+      resetTestimonialForm();
+    } catch(err){ showToast('Error: ' + err.message, 'error'); }
+  });
+  document.getElementById('testimonialCancelBtn').addEventListener('click', resetTestimonialForm);
+
+  db.collection('testimonials').orderBy('order','asc').onSnapshot(snap => {
+    const list = document.getElementById('testimonialsList');
+    if (snap.empty) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><strong>No testimonials yet</strong>Add your first customer review.</div>';
+      return;
+    }
+    let html = '<table><thead><tr><th>Name</th><th>Rating</th><th>Review</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    snap.forEach(doc => {
+      const t = doc.data();
+      html += `<tr>
+        <td data-label="Name"><div class="val-wrap"><strong>${esc(t.author||'')}</strong></div></td>
+        <td data-label="Rating"><div class="val-wrap" style="color:var(--gold);">${'★'.repeat(t.rating||5)}</div></td>
+        <td data-label="Review"><div class="val-wrap" style="font-size:.8rem;">${esc((t.text||'').slice(0,80))}${(t.text||'').length>80?'…':''}</div></td>
+        <td data-label="Status"><div class="val-wrap"><span class="badge ${t.active?'active':'inactive'}">${t.active?'Active':'Hidden'}</span></div></td>
+        <td data-label="Actions"><div class="val-wrap row-actions">
+          <button class="btn btn-outline btn-sm" onclick='editTestimonial(${JSON.stringify({id:doc.id,...t})})'><i class="fas fa-edit"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoc('testimonials','${doc.id}','Testimonial')"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    list.innerHTML = html;
+  });
+}
+window.editTestimonial = function(t){
+  document.getElementById('testimonialId').value = t.id;
+  document.getElementById('testimonialAuthor').value = t.author || '';
+  document.getElementById('testimonialText').value = t.text || '';
+  document.getElementById('testimonialRating').value = t.rating || 5;
+  document.getElementById('testimonialOrder').value = t.order || 0;
+  document.getElementById('testimonialActive').checked = !!t.active;
+  document.getElementById('testimonialFormTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Testimonial';
+  document.getElementById('testimonialCancelBtn').style.display = 'inline-flex';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+function resetTestimonialForm(){
+  document.getElementById('testimonialForm').reset();
+  document.getElementById('testimonialId').value = '';
+  document.getElementById('testimonialActive').checked = true;
+  document.getElementById('testimonialFormTitle').innerHTML = '<i class="fas fa-plus"></i> Add New Testimonial';
+  document.getElementById('testimonialCancelBtn').style.display = 'none';
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function initSettings(){
+  db.collection('site_config').doc('main').get().then(doc => {
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('setBusinessName').value = d.businessName || '';
+      document.getElementById('setOwnerEmail').value = d.ownerEmail || '';
+      document.getElementById('setPhone').value = d.phone || '';
+      document.getElementById('setWhatsapp').value = d.whatsapp || '';
+      document.getElementById('setLogoUrl').value = d.logoUrl || '';
+      document.getElementById('setHeroImageUrl').value = d.heroImageUrl || '';
+      document.getElementById('setHeroBadge').value = d.heroBadge || '';
+      document.getElementById('setHeroTitle').value = d.heroTitle || '';
+      document.getElementById('setHeroSubtitle').value = d.heroSubtitle || '';
+      document.getElementById('setPrimaryColor').value = d.primaryColor || '#0A0E1B';
+      document.getElementById('setAccentColor').value = d.accentColor || '#C6A052';
+      document.getElementById('setOpenHour').value = (d.openHour !== undefined && d.openHour !== null) ? d.openHour : 8;
+      document.getElementById('setCloseHour').value = (d.closeHour !== undefined && d.closeHour !== null) ? d.closeHour : 21;
+    }
+  }).catch(err => {
+    console.error('Settings load error:', err);
+    showToast('Could not load site settings. Check Firebase connection.', 'error');
+  });
+  document.getElementById('settingsForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const data = {
+      businessName: document.getElementById('setBusinessName').value.trim(),
+      ownerEmail: document.getElementById('setOwnerEmail').value.trim(),
+      phone: document.getElementById('setPhone').value.trim(),
+      whatsapp: document.getElementById('setWhatsapp').value.trim(),
+      logoUrl: document.getElementById('setLogoUrl').value.trim(),
+      heroImageUrl: document.getElementById('setHeroImageUrl').value.trim(),
+      heroBadge: document.getElementById('setHeroBadge').value.trim(),
+      heroTitle: document.getElementById('setHeroTitle').value.trim(),
+      heroSubtitle: document.getElementById('setHeroSubtitle').value.trim(),
+      primaryColor: document.getElementById('setPrimaryColor').value,
+      accentColor: document.getElementById('setAccentColor').value,
+      openHour: Number(document.getElementById('setOpenHour').value),
+      closeHour: Number(document.getElementById('setCloseHour').value)
+    };
+    try {
+      await db.collection('site_config').doc('main').set(data, { merge: true });
+      showToast('Settings saved — refresh website to see changes', 'success');
+    } catch(err){ showToast('Error: ' + err.message, 'error'); }
+  });
+}
+
+// ============================================================
+// SHARED DELETE
+// ============================================================
+window.deleteDoc = async function(collection, id, label){
+  if (!confirm(`${label} delete karna hai? Ye action wapas nahi ho sakta.`)) return;
+  try {
+    await db.collection(collection).doc(id).delete();
+    showToast(label + ' deleted', 'success');
+  } catch(err){ showToast('Error: ' + err.message, 'error'); }
+};
+</script>
+</body>
+</html>
